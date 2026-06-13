@@ -1,0 +1,633 @@
+/* ==========================================================================
+   VARIABLES DE SISTEMA Y PALETA DE COLORES
+   ========================================================================== */
+:root {
+    /* Tipografía */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    --font-serif: Georgia, "Times New Roman", Times, serif;
+    
+    /* Paleta de Colores UI (Pantalla) */
+    --bg-app: #f1f5f9;         /* Gris azulado suave */
+    --bg-surface: #ffffff;     /* Blanco puro para paneles y hoja */
+    --text-main: #1e293b;      /* Texto oscuro principal UI */
+    --text-muted: #64748b;     /* Texto secundario UI */
+    --border-ui: #cbd5e1;      /* Bordes UI */
+    
+    /* Colores Interactivos UI */
+    --primary-color: #0f172a;
+    --primary-hover: #334155;
+    --accent-color: #3b82f6;
+    
+    /* Paleta de Impresión / Partitura (Estrictamente B&W) */
+    --score-black: #000000;
+    --score-white: #ffffff;
+    
+    /* Sombras y Radios */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius-md: 8px;
+    --radius-lg: 12px;
+}
+
+/* ==========================================================================
+   RESETEO BASE
+   ========================================================================== */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   COMPONENTES GLOBALES (Botones y Formularios)
+   ========================================================================== */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.875rem;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.button--primary {
+    background-color: var(--primary-color);
+    color: var(--bg-surface);
+}
+
+.button--primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.button--secondary {
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    border: 1px solid var(--border-ui);
+}
+
+.button--secondary:hover {
+    background-color: var(--bg-app);
+    border-color: var(--text-muted);
+}
+
+.form-control {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-control__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.form-control__select {
+    padding: 0.625rem;
+    border: 1px solid var(--border-ui);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+.form-control__select:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -1px;
+}
+
+/* ==========================================================================
+   1 Y 4. ESTRUCTURA PRINCIPAL (Header y Layout)
+   ========================================================================== */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-ui);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.app-header__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.app-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1600px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+/* ==========================================================================
+   2. PANEL DE CONFIGURACIÓN (Sidebar)
+   ========================================================================== */
+.config-panel {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-ui);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.config-panel__subtitle {
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-ui);
+}
+
+/* Custom Progression (Drag & Drop) */
+.custom-progression {
+    margin-top: 1rem;
+}
+
+.custom-progression__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.custom-progression__help-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.custom-progression__pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.degree-btn {
+    background-color: var(--bg-app);
+    border: 1px solid var(--border-ui);
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-family: var(--font-sans);
+    color: var(--text-main);
+    cursor: grab;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.degree-btn:hover {
+    background-color: var(--border-ui);
+}
+
+.degree-btn:active {
+    cursor: grabbing;
+    transform: scale(0.95);
+}
+
+.custom-progression__dropzone {
+    min-height: 80px;
+    border: 2px dashed var(--border-ui);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-app);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    align-items: center;
+}
+
+.custom-progression__slot {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ==========================================================================
+   3. LIENZO PRINCIPAL Y CUADRÍCULA (Canvas / Sheet)
+   ========================================================================== */
+.chord-sheet__document {
+    background-color: var(--score-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 4rem 3rem;
+    color: var(--score-black);
+}
+
+.chord-sheet__header {
+    text-align: center;
+    margin-bottom: 3rem;
+    font-family: var(--font-serif);
+}
+
+.chord-sheet__title {
+    font-size: 2rem;
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+}
+
+.chord-sheet__subtitle {
+    font-size: 1.25rem;
+    font-style: italic;
+    color: #444; /* Gris oscuro para contraste sutil en pantalla */
+}
+
+/* Grid de acordes (Máximo 4 columnas por fila en Desktop) */
+.chord-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem 1.5rem;
+}
+
+.chord-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid transparent; /* Preparado para print */
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    transition: border-color 0.2s;
+}
+
+.chord-cell:hover {
+    border-color: var(--border-ui);
+    background-color: #fafafa;
+}
+
+.chord-cell__header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.chord-cell__degree {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.chord-cell__name {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--score-black);
+}
+
+.chord-svg-container {
+    width: 100%;
+    max-width: 160px;
+    aspect-ratio: 6/7;
+    margin: 0 auto 1rem auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chord-svg-placeholder {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.chord-cell__footer {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.chord-cell__footer .button--edit {
+    width: 100%;
+    font-size: 0.75rem;
+    padding: 0.4rem;
+}
+
+/* ==========================================================================
+   ESTILOS DE SVG DE ACORDES (Estructura B&W)
+   ========================================================================== */
+.chord-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Renderizado nítido para líneas rectas */
+.chord-svg__grid path {
+    shape-rendering: crispEdges;
+}
+
+.chord-svg__marker {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.chord-svg__marker--mute { fill: var(--score-black); }
+.chord-svg__marker--open { fill: var(--score-black); }
+.chord-svg__marker--play { fill: var(--score-black); font-size: 12px; }
+
+.chord-svg__fret--nut {
+    stroke-width: 5px; /* Cejuela gruesa */
+}
+
+/* Los círculos de los dedos mantienen antialiasing por defecto */
+.chord-svg__finger circle {
+    fill: var(--score-black);
+}
+
+.chord-svg__finger text {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: bold;
+    fill: var(--score-white);
+}
+
+/* ==========================================================================
+   5. COMPONENTE MODAL (Voicing Selector)
+   ========================================================================== */
+.modal {
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-lg);
+    background: transparent;
+    max-width: 800px;
+    width: 90vw;
+}
+
+.modal::backdrop {
+    background-color: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(4px);
+}
+
+.modal__content {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-ui);
+    background-color: var(--bg-app);
+}
+
+.modal__title {
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    color: var(--score-black);
+}
+
+.button--close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.button--close:hover {
+    color: var(--score-black);
+}
+
+.modal__body {
+    padding: 2rem;
+}
+
+.modal__instruction {
+    margin-bottom: 1.5rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.voicing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1.5rem;
+}
+
+.voicing-card {
+    border: 1px solid var(--border-ui);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: border-color 0.2s, transform 0.2s;
+}
+
+.voicing-card:hover {
+    border-color: var(--text-main);
+    transform: translateY(-2px);
+}
+
+.voicing-card__header {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.chord-svg-container--thumbnail {
+    max-width: 100px;
+}
+
+.voicing-card__footer {
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.button--select {
+    width: 100%;
+    background-color: var(--bg-app);
+    border: 1px solid var(--border-ui);
+    padding: 0.5rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.button--select:hover {
+    background-color: var(--primary-color);
+    color: var(--score-white);
+    border-color: var(--primary-color);
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (Pantallas menores)
+   ========================================================================== */
+@media screen and (max-width: 1024px) {
+    .app-layout {
+        grid-template-columns: 260px 1fr;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .app-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .config-panel {
+        position: static;
+    }
+    
+    .chord-sheet__document {
+        padding: 2rem 1.5rem;
+    }
+}
+
+/* ==========================================================================
+   ESTILOS DE IMPRESIÓN (Critical Requirements)
+   ========================================================================== */
+@media print {
+    /* Configuración de la página */
+    @page {
+        size: letter portrait;
+        margin: 15mm;
+    }
+
+    /* Ocultar elementos de UI */
+    .app-header,
+    .config-panel,
+    .chord-cell__footer,
+    .modal,
+    .app-header__actions {
+        display: none !important;
+    }
+
+    /* Reset de fondo para ahorro de tinta */
+    body, .app, .app-layout {
+        background: transparent !important;
+        background-color: var(--score-white) !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Ajuste del layout principal para ocupar 100% */
+    .app-layout {
+        display: block;
+        width: 100%;
+        max-width: none;
+    }
+
+    /* Ajuste de la hoja de acordes */
+    .chord-sheet__document {
+        padding: 0;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        color: var(--score-black) !important;
+        width: 100%;
+    }
+
+    .chord-sheet__header {
+        margin-bottom: 2cm;
+    }
+    
+    .chord-sheet__title {
+        font-size: 24pt;
+        color: var(--score-black) !important;
+    }
+
+    .chord-sheet__subtitle {
+        font-size: 14pt;
+        color: #333 !important; /* Gris muy oscuro válido en print */
+    }
+
+    /* Reestructuración de la cuadrícula a modo 'Partitura' */
+    .chord-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr) !important; /* Forzar 4 columnas */
+        gap: 0; /* Sin espacios, bordes colapsados visualmente */
+        border-top: 1px solid var(--score-black);
+        border-left: 1px solid var(--score-black);
+    }
+
+    /* Celdas de partitura */
+    .chord-cell {
+        border: none;
+        border-right: 1px solid var(--score-black);
+        border-bottom: 1px solid var(--score-black);
+        border-radius: 0;
+        padding: 1.5cm 0.5cm;
+        background-color: transparent !important;
+        
+        /* Evitar que un acorde se corte entre dos páginas */
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Forzar colores en SVG e impresiones */
+    .chord-cell__name {
+        color: var(--score-black) !important;
+        font-size: 16pt;
+    }
+    
+    .chord-cell__degree {
+        color: var(--score-black) !important;
+        font-size: 10pt;
+    }
+
+    .chord-svg__grid path,
+    .chord-svg__marker {
+        stroke: var(--score-black) !important;
+        fill: var(--score-black) !important;
+    }
+    
+    .chord-svg__finger circle {
+        fill: var(--score-black) !important;
+    }
+    
+    .chord-svg__finger text {
+        fill: var(--score-white) !important;
+    }
+}

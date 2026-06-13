@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Acordes y Teoría Musical para Guitarra Clásica</title>
+    <!-- Vinculación estricta de la hoja de estilos externa -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="app">
+
+    <!-- 4. COMPONENTE DE ACCIONES GLOBALES Y CABECERA -->
+    <header class="app-header">
+        <h1 class="app-header__title">GuitarChord Pro - Modo Aprendiz</h1>
+        <nav class="app-header__actions">
+            <button class="button button--primary" type="button" id="btn-print-pdf">
+                <span class="button__icon">🖨️</span> Imprimir / Guardar en PDF
+            </button>
+        </nav>
+    </header>
+
+    <div class="app-layout">
+        <!-- 1. COMPONENTE DE CONFIGURACIÓN DE TONALIDAD Y MODO (Sidebar) -->
+        <aside class="config-panel">
+            <section class="config-panel__section">
+                <h2 class="config-panel__subtitle">Tonalidad y Modo</h2>
+                
+                <div class="form-control">
+                    <label class="form-control__label" for="root-note">Nota Raíz</label>
+                    <select class="form-control__select" id="root-note">
+                        <option value="C" selected>C (Do)</option>
+                        <option value="C#">C# (Do#)</option>
+                        <option value="D">D (Re)</option>
+                        <option value="Eb">Eb (Mib)</option>
+                        <option value="E">E (Mi)</option>
+                        <option value="F">F (Fa)</option>
+                        <option value="F#">F# (Fa#)</option>
+                        <option value="G">G (Sol)</option>
+                        <option value="Ab">Ab (Lab)</option>
+                        <option value="A">A (La)</option>
+                        <option value="Bb">Bb (Sib)</option>
+                        <option value="B">B (Si)</option>
+                    </select>
+                </div>
+
+                <div class="form-control">
+                    <label class="form-control__label" for="scale-mode">Modo / Escala</label>
+                    <select class="form-control__select" id="scale-mode">
+                        <option value="major-natural" selected>Mayor Natural</option>
+                        <option value="minor-natural">Menor Natural</option>
+                        <option value="minor-harmonic">Menor Armónica</option>
+                        <option value="minor-melodic">Menor Melódica</option>
+                    </select>
+                </div>
+            </section>
+
+            <section class="config-panel__section">
+                <h2 class="config-panel__subtitle">Movimientos Tonales</h2>
+                
+                <div class="form-control">
+                    <label class="form-control__label" for="preset-progression">Progresiones Predeterminadas</label>
+                    <select class="form-control__select" id="preset-progression">
+                        <option value="I-IV-V-I" selected>I - IV - V - I (Básica)</option>
+                        <option value="ii-V-I">ii - V - I (Jazz/Clásica)</option>
+                        <option value="I-vi-IV-V">I - vi - IV - V (Pop/Balada)</option>
+                    </select>
+                </div>
+
+                <div class="custom-progression">
+                    <h3 class="custom-progression__title">Progresión Personalizada</h3>
+                    <p class="custom-progression__help-text">Arrastra los grados al área de construcción:</p>
+                    
+                    <div class="custom-progression__pool" aria-label="Grados musicales disponibles">
+                        <!-- Botones de grados correspondientes a Do Mayor (C Major) por defecto -->
+                        <button class="degree-btn" type="button" draggable="true">I</button>
+                        <button class="degree-btn" type="button" draggable="true">ii</button>
+                        <button class="degree-btn" type="button" draggable="true">iii</button>
+                        <button class="degree-btn" type="button" draggable="true">IV</button>
+                        <button class="degree-btn" type="button" draggable="true">V</button>
+                        <button class="degree-btn" type="button" draggable="true">vi</button>
+                        <button class="degree-btn" type="button" draggable="true">vii°</button>
+                    </div>
+
+                    <div class="custom-progression__dropzone" aria-label="Área de progresión construida">
+                        <!-- Secuencia I-IV-V-I pre-cargada como ejemplo por defecto -->
+                        <div class="custom-progression__slot">I</div>
+                        <div class="custom-progression__slot">IV</div>
+                        <div class="custom-progression__slot">V</div>
+                        <div class="custom-progression__slot">I</div>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <!-- 2. COMPONENTE DEL CONTENEDOR PRINCIPAL (Canvas de Impresión) -->
+        <main class="chord-sheet">
+            <article class="chord-sheet__document">
+                <header class="chord-sheet__header">
+                    <h2 class="chord-sheet__title">Hoja de Práctica: Progresión en C Major (Do Mayor)</h2>
+                    <p class="chord-sheet__subtitle">Movimiento Tonal: I - IV - V - I</p>
+                </header>
+
+                <!-- Cuadrícula para mostrar máximo 4 columnas por fila (El maquetado Carta se gestiona en CSS) -->
+                <div class="chord-grid">
+                    
+                    <!-- Acorde 1: I (C Major) -->
+                    <section class="chord-cell">
+                        <header class="chord-cell__header">
+                            <span class="chord-cell__degree">Grado I</span>
+                            <h3 class="chord-cell__name">C Major</h3>
+                        </header>
+                        
+                        <div class="chord-svg-container">
+                            <!-- 
+                                TEMPLATE BASE DE SVG VECTORIAL PARA DIAGRAMA DE ACORDES 
+                                (Este bloque debe generarse dinámicamente vía JavaScript)
+                            -->
+                            <svg class="chord-svg" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" aria-label="Diagrama del acorde C Major">
+                                <!-- Marcas superiores (Cuerdas al aire 'O' o mudas 'X') -->
+                                <g class="chord-svg__top-markers">
+                                    <text x="15" y="15" class="chord-svg__marker chord-svg__marker--mute" text-anchor="middle">X</text>
+                                    <text x="33" y="15" class="chord-svg__marker chord-svg__marker--play" text-anchor="middle">3</text>
+                                    <text x="51" y="15" class="chord-svg__marker chord-svg__marker--play" text-anchor="middle">2</text>
+                                    <text x="69" y="15" class="chord-svg__marker chord-svg__marker--open" text-anchor="middle">O</text>
+                                    <text x="87" y="15" class="chord-svg__marker chord-svg__marker--play" text-anchor="middle">1</text>
+                                    <text x="105" y="15" class="chord-svg__marker chord-svg__marker--open" text-anchor="middle">O</text>
+                                </g>
+
+                                <!-- Cuadrícula del diapasón (Trastes y Cuerdas) -->
+                                <g class="chord-svg__grid" transform="translate(15, 25)">
+                                    <!-- 6 Líneas verticales (Cuerdas: 6ta a 1ra, simulando grosores relativos) -->
+                                    <path class="chord-svg__string" d="M 0 0 V 100" stroke="#000" stroke-width="2.5"/> 
+                                    <path class="chord-svg__string" d="M 18 0 V 100" stroke="#000" stroke-width="2"/>
+                                    <path class="chord-svg__string" d="M 36 0 V 100" stroke="#000" stroke-width="1.5"/>
+                                    <path class="chord-svg__string" d="M 54 0 V 100" stroke="#000" stroke-width="1"/>
+                                    <path class="chord-svg__string" d="M 72 0 V 100" stroke="#000" stroke-width="0.8"/>
+                                    <path class="chord-svg__string" d="M 90 0 V 100" stroke="#000" stroke-width="0.5"/>
+
+                                    <!-- 5 Líneas horizontales (Trastes) -->
+                                    <path class="chord-svg__fret chord-svg__fret--nut" d="M 0 0 H 90" stroke="#000" stroke-width="4"/> <!-- Cejuela -->
+                                    <path class="chord-svg__fret" d="M 0 25 H 90" stroke="#000" stroke-width="1"/>
+                                    <path class="chord-svg__fret" d="M 0 50 H 90" stroke="#000" stroke-width="1"/>
+                                    <path class="chord-svg__fret" d="M 0 75 H 90" stroke="#000" stroke-width="1"/>
+                                    <path class="chord-svg__fret" d="M 0 100 H 90" stroke="#000" stroke-width="1"/>
+                                </g>
+
+                                <!-- Ejemplo de marcador de Cejilla (Barre) - Oculto/Comentado para C Major en 1ra posición
+                                <rect class="chord-svg__barre" x="15" y="32" width="90" height="12" rx="6" fill="#333" /> 
+                                <path class="chord-svg__barre-curve" d="M 15 38 Q 60 30 105 38" stroke="#333" stroke-width="5" fill="none" stroke-linecap="round"/>
+                                -->
+
+                                <!-- Posiciones de los dedos -->
+                                <g class="chord-svg__fingers" transform="translate(15, 25)">
+                                    <!-- Dedo 3 en 5ta cuerda, 3er traste -->
+                                    <g class="chord-svg__finger" transform="translate(18, 62.5)">
+                                        <circle cx="0" cy="0" r="7" fill="#000"/>
+                                        <text x="0" y="3" fill="#fff" font-size="10" font-family="sans-serif" text-anchor="middle">3</text>
+                                    </g>
+                                    <!-- Dedo 2 en 4ta cuerda, 2do traste -->
+                                    <g class="chord-svg__finger" transform="translate(36, 37.5)">
+                                        <circle cx="0" cy="0" r="7" fill="#000"/>
+                                        <text x="0" y="3" fill="#fff" font-size="10" font-family="sans-serif" text-anchor="middle">2</text>
+                                    </g>
+                                    <!-- Dedo 1 en 2da cuerda, 1er traste -->
+                                    <g class="chord-svg__finger" transform="translate(72, 12.5)">
+                                        <circle cx="0" cy="0" r="7" fill="#000"/>
+                                        <text x="0" y="3" fill="#fff" font-size="10" font-family="sans-serif" text-anchor="middle">1</text>
+                                    </g>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <footer class="chord-cell__footer">
+                            <button class="button button--secondary button--edit" type="button" aria-haspopup="dialog">
+                                <span class="button__icon">✏️</span> Editar Variación
+                            </button>
+                        </footer>
+                    </section>
+
+                    <!-- Acorde 2: IV (F Major) -->
+                    <section class="chord-cell">
+                        <header class="chord-cell__header">
+                            <span class="chord-cell__degree">Grado IV</span>
+                            <h3 class="chord-cell__name">F Major</h3>
+                        </header>
+                        <div class="chord-svg-container">
+                            <!-- Inyectado por JS -->
+                            <div class="chord-svg-placeholder">Cargando diagrama...</div>
+                        </div>
+                        <footer class="chord-cell__footer">
+                            <button class="button button--secondary button--edit" type="button" aria-haspopup="dialog">
+                                <span class="button__icon">✏️</span> Editar Variación
+                            </button>
+                        </footer>
+                    </section>
+
+                    <!-- Acorde 3: V (G Major) -->
+                    <section class="chord-cell">
+                        <header class="chord-cell__header">
+                            <span class="chord-cell__degree">Grado V</span>
+                            <h3 class="chord-cell__name">G Major</h3>
+                        </header>
+                        <div class="chord-svg-container">
+                            <!-- Inyectado por JS -->
+                            <div class="chord-svg-placeholder">Cargando diagrama...</div>
+                        </div>
+                        <footer class="chord-cell__footer">
+                            <button class="button button--secondary button--edit" type="button" aria-haspopup="dialog">
+                                <span class="button__icon">✏️</span> Editar Variación
+                            </button>
+                        </footer>
+                    </section>
+
+                    <!-- Acorde 4: I (C Major) -->
+                    <section class="chord-cell">
+                        <header class="chord-cell__header">
+                            <span class="chord-cell__degree">Grado I</span>
+                            <h3 class="chord-cell__name">C Major</h3>
+                        </header>
+                        <div class="chord-svg-container">
+                            <!-- Inyectado por JS -->
+                            <div class="chord-svg-placeholder">Cargando diagrama...</div>
+                        </div>
+                        <footer class="chord-cell__footer">
+                            <button class="button button--secondary button--edit" type="button" aria-haspopup="dialog">
+                                <span class="button__icon">✏️</span> Editar Variación
+                            </button>
+                        </footer>
+                    </section>
+
+                </div>
+            </article>
+        </main>
+    </div>
+
+    <!-- 3. COMPONENTE MODAL INTERACTIVO (Voicing Selector) -->
+    <dialog class="modal" id="voicing-modal">
+        <article class="modal__content">
+            <header class="modal__header">
+                <h2 class="modal__title">Variaciones para <span class="modal__dynamic-chord-name">C Major</span></h2>
+                <button class="button button--close" id="btn-close-modal" type="button" aria-label="Cerrar ventana">
+                    ✕
+                </button>
+            </header>
+            
+            <section class="modal__body">
+                <p class="modal__instruction">Selecciona la digitación (voicing) más cómoda para tu ejecución:</p>
+                
+                <div class="voicing-grid">
+                    <!-- Variación 1 -->
+                    <article class="voicing-card">
+                        <header class="voicing-card__header">
+                            <span class="voicing-card__number">Opción 1</span>
+                        </header>
+                        <div class="chord-svg-container chord-svg-container--thumbnail">
+                            <!-- Miniatura del SVG generada por JS -->
+                        </div>
+                        <footer class="voicing-card__footer">
+                            <button class="button button--select" type="button">Fijar</button>
+                        </footer>
+                    </article>
+
+                    <!-- Variación 2 -->
+                    <article class="voicing-card">
+                        <header class="voicing-card__header">
+                            <span class="voicing-card__number">Opción 2</span>
+                        </header>
+                        <div class="chord-svg-container chord-svg-container--thumbnail"></div>
+                        <footer class="voicing-card__footer">
+                            <button class="button button--select" type="button">Fijar</button>
+                        </footer>
+                    </article>
+
+                    <!-- Variación 3 -->
+                    <article class="voicing-card">
+                        <header class="voicing-card__header">
+                            <span class="voicing-card__number">Opción 3</span>
+                        </header>
+                        <div class="chord-svg-container chord-svg-container--thumbnail"></div>
+                        <footer class="voicing-card__footer">
+                            <button class="button button--select" type="button">Fijar</button>
+                        </footer>
+                    </article>
+
+                    <!-- Variación 4 -->
+                    <article class="voicing-card">
+                        <header class="voicing-card__header">
+                            <span class="voicing-card__number">Opción 4</span>
+                        </header>
+                        <div class="chord-svg-container chord-svg-container--thumbnail"></div>
+                        <footer class="voicing-card__footer">
+                            <button class="button button--select" type="button">Fijar</button>
+                        </footer>
+                    </article>
+
+                    <!-- Variación 5 -->
+                    <article class="voicing-card">
+                        <header class="voicing-card__header">
+                            <span class="voicing-card__number">Opción 5</span>
+                        </header>
+                        <div class="chord-svg-container chord-svg-container--thumbnail"></div>
+                        <footer class="voicing-card__footer">
+                            <button class="button button--select" type="button">Fijar</button>
+                        </footer>
+                    </article>
+                </div>
+            </section>
+        </article>
+    </dialog>
+
+    <!-- Vinculación del script externo según el requerimiento de limpieza y estructura -->
+    <script src="script.js"></script>
+</body>
+</html>
