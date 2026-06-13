@@ -43,29 +43,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 { numeral: 'i', quality: 'mMaj7' }, { numeral: 'ii', quality: 'min' },
                 { numeral: 'III+', quality: 'Aug' }, { numeral: 'IV', quality: 'Maj' },
                 { numeral: 'V', quality: '7' }, { numeral: 'vi°', quality: 'm7b5' },
-                { numeral: 'vii°', quality: 'm7b5' }
+                { numeral: 'vii°', quality: 'dim7' }
             ]
         },
 
-        getNoteArray(root) {
-            const flatRoots = ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb'];
-            return flatRoots.includes(root) ? this.NOTES_FLAT : this.NOTES_SHARP;
+        getNoteSpelling(noteIndex, expectedLetter) {
+            const sharpNote = this.NOTES_SHARP[noteIndex];
+            const flatNote = this.NOTES_FLAT[noteIndex];
+            
+            if (sharpNote[0] === expectedLetter) return sharpNote;
+            if (flatNote[0] === expectedLetter) return flatNote;
+            
+            // Corrección enarmónica estricta para notas fuera de armaduras comunes
+            if (expectedLetter === 'C' && sharpNote === 'B') return 'B#';
+            if (expectedLetter === 'F' && sharpNote === 'E') return 'E#';
+            if (expectedLetter === 'B' && flatNote === 'C') return 'Cb';
+            if (expectedLetter === 'E' && flatNote === 'F') return 'Fb';
+            
+            return sharpNote;
         },
 
         generateDiatonicChords(rootName, mode) {
-            const notes = this.getNoteArray(rootName);
-            const rootIndex = notes.indexOf(rootName);
+            let rootIndex = this.NOTES_SHARP.indexOf(rootName);
+            if (rootIndex === -1) rootIndex = this.NOTES_FLAT.indexOf(rootName);
+
             const intervals = this.SCALE_INTERVALS[mode];
             const mapping = this.DIATONIC_MAPPING[mode];
 
+            const ALPHABET = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+            const rootAlphaIdx = ALPHABET.indexOf(rootName[0]);
+
             return mapping.map((degree, index) => {
                 const noteIndex = (rootIndex + intervals[index]) % 12;
+                const expectedLetter = ALPHABET[(rootAlphaIdx + index) % 7];
+                const noteSpelling = this.getNoteSpelling(noteIndex, expectedLetter);
+
                 return {
                     degree: degree.numeral,
                     degreeIndex: index,
-                    rootNote: notes[noteIndex],
+                    rootNote: noteSpelling,
                     quality: degree.quality,
-                    fullName: `${notes[noteIndex]} ${degree.quality}`
+                    fullName: `${noteSpelling} ${degree.quality}`
                 };
             });
         }
@@ -131,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'C': {
             'Maj': [
                 { frets: ['X', 3, 2, 0, 1, 0], fingers: [0, 3, 2, 0, 1, 0], baseFret: 1 },
-                { frets: ['X', 3, 5, 5, 5, 3], fingers: [0, 1, 2, 3, 4, 1], baseFret: 3, barre: { fret: 3, from: 1, to: 5 } },
+                { frets: ['X', 3, 5, 5, 5, 3], fingers: [0, 1, 3, 3, 3, 1], baseFret: 3, barre: { fret: 3, from: 1, to: 5 } },
                 { frets: [8, 10, 10, 9, 8, 8], fingers: [1, 3, 4, 2, 1, 1], baseFret: 8, barre: { fret: 8, from: 0, to: 5 } }
             ],
             'min': [
@@ -219,7 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 { frets: [1, 3, 1, 1, 1, 1], fingers: [1, 3, 1, 1, 1, 1], baseFret: 1, barre: { fret: 1, from: 0, to: 5 } },
                 { frets: ['X', 8, 10, 8, 9, 8], fingers: [0, 1, 3, 1, 2, 1], baseFret: 8, barre: { fret: 8, from: 1, to: 5 } }
             ],
-            'Maj7': [ { frets: [1, 'X', 2, 2, 1, 'X'], fingers: [1, 0, 3, 4, 2, 0], baseFret: 1 } ],
+            'Maj7': [ { frets: ['X', 'X', 3, 2, 1, 0], fingers: [0, 0, 3, 2, 1, 0], baseFret: 1 } ],
             'dim': [ { frets: [1, 'X', 0, 1, 0, 'X'], fingers: [2, 0, 0, 3, 0, 0], baseFret: 1 } ],
             'dim7': [ { frets: [1, 'X', 0, 1, 0, 1], fingers: [2, 0, 0, 3, 0, 4], baseFret: 1 } ],
             'm7b5': [ { frets: [1, 'X', 1, 1, 0, 'X'], fingers: [2, 0, 3, 4, 0, 0], baseFret: 1 } ],
@@ -257,6 +275,19 @@ document.addEventListener('DOMContentLoaded', () => {
        3. MOTOR DE GENERACIÓN Y TRANSPOSICIÓN
        ========================================================================== */
     const GuitarEngine = {
+        UNIVERSAL_SHAPES: {
+            'Maj': { frets: [1, 3, 3, 2, 1, 1], fingers: [1, 3, 4, 2, 1, 1], baseFret: 1, barre: { fret: 1, from: 0, to: 5 }, rootString: 6, rootFret: 1 },
+            'min': { frets: [1, 3, 3, 1, 1, 1], fingers: [1, 3, 4, 1, 1, 1], baseFret: 1, barre: { fret: 1, from: 0, to: 5 }, rootString: 6, rootFret: 1 },
+            '7': { frets: [1, 3, 1, 2, 1, 1], fingers: [1, 3, 1, 2, 1, 1], baseFret: 1, barre: { fret: 1, from: 0, to: 5 }, rootString: 6, rootFret: 1 },
+            'm7': { frets: [1, 3, 1, 1, 1, 1], fingers: [1, 3, 1, 1, 1, 1], baseFret: 1, barre: { fret: 1, from: 0, to: 5 }, rootString: 6, rootFret: 1 },
+            'Maj7': { frets: ['X', 3, 5, 4, 5, 3], fingers: [0, 1, 3, 2, 4, 1], baseFret: 3, barre: { fret: 3, from: 1, to: 5 }, rootString: 5, rootFret: 3 },
+            'dim': { frets: ['X', 3, 4, 5, 4, 'X'], fingers: [0, 1, 2, 4, 3, 0], baseFret: 3, rootString: 5, rootFret: 3 },
+            'dim7': { frets: ['X', 3, 4, 2, 4, 'X'], fingers: [0, 2, 3, 1, 4, 0], baseFret: 2, rootString: 5, rootFret: 3 },
+            'm7b5': { frets: ['X', 3, 4, 3, 4, 'X'], fingers: [0, 1, 3, 2, 4, 0], baseFret: 3, rootString: 5, rootFret: 3 },
+            'Aug': { frets: [1, 'X', 3, 2, 2, 1], fingers: [1, 0, 4, 2, 3, 1], baseFret: 1, rootString: 6, rootFret: 1 },
+            'mMaj7': { frets: ['X', 3, 5, 4, 4, 3], fingers: [0, 1, 4, 2, 3, 1], baseFret: 3, barre: { fret: 3, from: 1, to: 5 }, rootString: 5, rootFret: 3 }
+        },
+
         // Transpone un voicing completo sumando un offset a los trastes
         shiftVoicing(voicing, offset) {
             let newFrets = voicing.frets.map(f => (f === 'X' || f === 0 && offset === 0) ? f : (f === 0 ? offset : f + offset));
@@ -284,6 +315,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return { frets: newFrets, fingers: voicing.fingers, baseFret: newBaseFret, barre: newBarre };
+        },
+
+        getUniversalMovableShape(targetNote, quality) {
+            const shape = this.UNIVERSAL_SHAPES[quality];
+            if (!shape) return null;
+
+            const chromatic5th = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
+            const chromatic5thFlat = ['A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab'];
+            
+            const chromatic6th = ['E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B', 'C', 'C#', 'D', 'D#'];
+            const chromatic6thFlat = ['E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B', 'C', 'Db', 'D', 'Eb'];
+
+            let targetFret = 0;
+            if (shape.rootString === 5) {
+                targetFret = chromatic5th.indexOf(targetNote);
+                if (targetFret === -1) targetFret = chromatic5thFlat.indexOf(targetNote);
+            } else {
+                targetFret = chromatic6th.indexOf(targetNote);
+                if (targetFret === -1) targetFret = chromatic6thFlat.indexOf(targetNote);
+            }
+
+            if (targetFret === 0) targetFret = 12;
+
+            const offset = targetFret - shape.rootFret;
+            const cleanShape = { frets: shape.frets, fingers: shape.fingers, baseFret: shape.baseFret };
+            if (shape.barre) cleanShape.barre = shape.barre;
+
+            return this.shiftVoicing(cleanShape, offset);
         },
 
         // Obtiene o calcula los voicings para cualquier nota y calidad
@@ -314,13 +373,30 @@ document.addEventListener('DOMContentLoaded', () => {
             // Si no hay offset, devolver la base de datos directa
             if (offset === 0) return targetQualities.slice(0, 5);
 
-            // Si hay offset, transponer garantizando ejecución clásica (sin cuerdas al aire falsas)
-            let shiftedVoicings = targetQualities.map(v => this.shiftVoicing(v, offset));
+            // 1. Filtrar posiciones abiertas (al aire) para evitar transponerlas matemáticamente
+            let closedVoicings = targetQualities.filter(v => !v.frets.includes(0));
             
-            // Filtrar formas que se vuelvan imposibles (ej. traste > 15 o negativas)
-            shiftedVoicings = shiftedVoicings.filter(v => v.baseFret > 0 && v.baseFret < 14);
+            let shiftedVoicings = [];
+
+            if (closedVoicings.length > 0) {
+                shiftedVoicings = closedVoicings.map(v => this.shiftVoicing(v, offset));
+                shiftedVoicings = shiftedVoicings.filter(v => v.baseFret > 0 && v.baseFret < 14);
+            }
+
+            // 2. Fallback: si se descartaron las abiertas y no quedaron opciones, usar molde CAGED universal
+            if (shiftedVoicings.length === 0) {
+                const fallbackShape = this.getUniversalMovableShape(rootNote, quality);
+                if (fallbackShape && fallbackShape.baseFret > 0 && fallbackShape.baseFret < 14) {
+                    shiftedVoicings.push(fallbackShape);
+                }
+            }
             
-            return shiftedVoicings.length > 0 ? shiftedVoicings.slice(0, 5) : [this.shiftVoicing(CHORD_DATABASE['A']['Maj'][1], 0)]; // Fallback seguro
+            // 3. Respaldo final absoluto por seguridad estructural
+            if (shiftedVoicings.length === 0) {
+                shiftedVoicings.push(this.shiftVoicing(CHORD_DATABASE['A']['Maj'][1], 0));
+            }
+
+            return shiftedVoicings.slice(0, 5);
         }
     };
 
@@ -492,6 +568,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (val === 'I-IV-V-I') this.state.progressionSeq = [0, 3, 4, 0];
                 if (val === 'ii-V-I') this.state.progressionSeq = [1, 4, 0];
                 if (val === 'I-vi-IV-V') this.state.progressionSeq = [0, 5, 3, 4];
+                if (val === 'I-V-vi-IV') this.state.progressionSeq = [0, 4, 5, 3];
+                if (val === 'vi-IV-I-V') this.state.progressionSeq = [5, 3, 0, 4];
+                if (val === 'I-vi-ii-V') this.state.progressionSeq = [0, 5, 1, 4];
                 this.syncDropzoneUI();
                 this.renderSheet();
             });
@@ -510,7 +589,8 @@ document.addEventListener('DOMContentLoaded', () => {
         setupDragAndDrop() {
             this.elements.pool.addEventListener('dragstart', (e) => {
                 if (e.target.classList.contains('degree-btn')) {
-                    e.dataTransfer.setData('text/plain', e.target.dataset.degreeIndex);
+                    e.dataTransfer.setData('action', 'add');
+                    e.dataTransfer.setData('index', e.target.dataset.degreeIndex);
                     e.target.style.opacity = '0.5';
                 }
             });
@@ -518,14 +598,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target.classList.contains('degree-btn')) e.target.style.opacity = '1';
             });
 
+            // Permitir arrastrar de vuelta a la piscina para eliminar
+            this.elements.pool.addEventListener('dragover', (e) => e.preventDefault());
+            this.elements.pool.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const action = e.dataTransfer.getData('action');
+                if (action === 'remove') {
+                    const slotIndex = parseInt(e.dataTransfer.getData('index'), 10);
+                    this.removeChordFromProgression(slotIndex);
+                }
+            });
+
+            // Eventos para arrastrar los acordes que ya están dentro de la progresión
+            this.elements.dropzone.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('custom-progression__slot')) {
+                    e.dataTransfer.setData('action', 'remove');
+                    e.dataTransfer.setData('index', e.target.dataset.slotIndex);
+                    e.target.style.opacity = '0.5';
+                }
+            });
+            this.elements.dropzone.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('custom-progression__slot')) e.target.style.opacity = '1';
+            });
+
             this.elements.dropzone.addEventListener('dragover', (e) => e.preventDefault());
             this.elements.dropzone.addEventListener('drop', (e) => {
                 e.preventDefault();
-                const degreeIndexStr = e.dataTransfer.getData('text/plain');
-                if (degreeIndexStr !== '') {
-                    this.state.progressionSeq.push(parseInt(degreeIndexStr, 10));
-                    this.syncDropzoneUI();
-                    this.renderSheet();
+                const action = e.dataTransfer.getData('action');
+                if (action === 'add') {
+                    const degreeIndexStr = e.dataTransfer.getData('index');
+                    if (degreeIndexStr !== '') {
+                        this.state.progressionSeq.push(parseInt(degreeIndexStr, 10));
+                        this.syncDropzoneUI();
+                        this.renderSheet();
+                    }
+                } 
+                // Fallback de compatibilidad
+                else if (!action) {
+                    const degreeIndexStr = e.dataTransfer.getData('text/plain');
+                    if (degreeIndexStr && !isNaN(degreeIndexStr)) {
+                        this.state.progressionSeq.push(parseInt(degreeIndexStr, 10));
+                        this.syncDropzoneUI();
+                        this.renderSheet();
+                    }
                 }
             });
 
@@ -533,13 +648,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target.classList.contains('custom-progression__slot')) {
                     const slotIndex = Array.from(this.elements.dropzone.children).indexOf(e.target);
                     if (slotIndex > -1) {
-                        this.state.progressionSeq.splice(slotIndex, 1);
-                        delete this.state.selectedVoicings[slotIndex];
-                        this.syncDropzoneUI();
-                        this.renderSheet();
+                        this.removeChordFromProgression(slotIndex);
                     }
                 }
             });
+        },
+
+        removeChordFromProgression(slotIndex) {
+            this.state.progressionSeq.splice(slotIndex, 1);
+            
+            // Reorganizar voicings seleccionados para que al borrar un bloque medio
+            // los acordes subsiguientes no pierdan su variación guardada
+            const newVoicings = {};
+            for (const key in this.state.selectedVoicings) {
+                const k = parseInt(key, 10);
+                if (k < slotIndex) {
+                    newVoicings[k] = this.state.selectedVoicings[k];
+                } else if (k > slotIndex) {
+                    newVoicings[k - 1] = this.state.selectedVoicings[k];
+                }
+            }
+            this.state.selectedVoicings = newVoicings;
+
+            this.syncDropzoneUI();
+            this.renderSheet();
         },
 
         updateTheoryState() {
@@ -565,11 +697,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         syncDropzoneUI() {
             this.elements.dropzone.innerHTML = '';
-            this.state.progressionSeq.forEach(idx => {
+            this.state.progressionSeq.forEach((idx, slotIndex) => {
                 const slot = document.createElement('div');
                 slot.className = 'custom-progression__slot';
+                slot.draggable = true;
+                slot.dataset.slotIndex = slotIndex;
                 slot.textContent = this.state.chords[idx].degree;
-                slot.title = 'Doble clic para eliminar';
+                slot.title = 'Arrastra fuera o doble clic para eliminar';
                 this.elements.dropzone.appendChild(slot);
             });
         },
