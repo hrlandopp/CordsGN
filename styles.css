@@ -121,13 +121,42 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    padding: 0.5rem 2rem; /* Ajuste de padding vertical */
     background-color: var(--bg-surface);
     border-bottom: 1px solid var(--border-ui);
     box-shadow: var(--shadow-sm);
     position: sticky;
     top: 0;
     z-index: 10;
+    gap: 2rem;
+}
+
+.app-header__nav {
+    display: flex;
+    gap: 0.5rem;
+    align-self: stretch; /* Ocupa toda la altura del header */
+    align-items: flex-end; /* Alinea los botones abajo */
+    margin: 0 auto;
+}
+
+.button--nav {
+    background-color: transparent;
+    color: var(--text-muted);
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    height: 100%;
+}
+
+.button--nav:hover {
+    color: var(--text-main);
+}
+
+.button--nav-active, .button--nav-active:hover {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
 }
 
 .app-header__title {
@@ -505,6 +534,96 @@ body {
     background-color: var(--primary-color);
     color: var(--score-white);
     border-color: var(--primary-color);
+}
+
+/* ==========================================================================
+   6. COMPONENTES ESPECÍFICOS DEL ENSAMBLADOR
+   ========================================================================== */
+.assembler-preview {
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.assembler-preview__title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+}
+
+#assembler-voicings-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.voicing-card--preview {
+    padding: 0.75rem;
+    cursor: pointer;
+    border: 2px solid var(--border-ui);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    background-color: var(--bg-surface);
+}
+
+.voicing-card--preview:hover {
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+}
+
+.voicing-card--preview.voicing-card--selected {
+    border-color: var(--primary-color);
+    background-color: #f8fafc;
+    box-shadow: var(--shadow-sm);
+}
+
+.voicing-card--preview .chord-svg-container {
+    max-width: 100px;
+    margin: 0 auto 0.5rem;
+}
+
+.voicing-card--preview .voicing-card__header {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Empty state for assembler grid */
+#assembler-grid:empty {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--border-ui);
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-app);
+    margin-top: 2rem;
+}
+
+#assembler-grid:empty::before {
+    content: "Tu hoja de práctica está vacía.\Añade acordes desde el panel de la izquierda.";
+    white-space: pre-wrap; /* Allows line breaks with \A */
+    text-align: center;
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+}
+
+.button--delete {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    font-size: 0.75rem;
+    padding: 0.4rem;
+    width: 100%;
+}
+.button--delete:hover {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+.button--delete .button__icon {
+    font-size: 0.8rem;
 }
 
 /* ==========================================================================

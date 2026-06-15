@@ -99,6 +99,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 { frets: [5, 7, 7, 6, 5, 5], fingers: [1, 3, 4, 2, 1, 1], baseFret: 5, barre: { fret: 5, from: 0, to: 5 } },
                 { frets: ['X', 'X', 7, 9, 10, 9], fingers: [0, 0, 1, 2, 4, 3], baseFret: 7 }
             ],
+            '6': [ { frets: ['X', 0, 2, 2, 2, 2], fingers: [0, 0, 1, 2, 3, 4], baseFret: 1 } ],
+            'm6': [ { frets: ['X', 0, 2, 2, 1, 2], fingers: [0, 0, 2, 3, 1, 4], baseFret: 1 } ],
+            'sus2': [ { frets: ['X', 0, 2, 2, 0, 0], fingers: [0, 0, 2, 3, 0, 0], baseFret: 1 } ], // A E A B E -> Correcto
+            'sus4': [ { frets: ['X', 0, 2, 2, 3, 0], fingers: [0, 0, 1, 2, 4, 0], baseFret: 1 } ],
+            'add9': [ { frets: ['X', 0, 2, 4, 2, 0], fingers: [0, 0, 1, 3, 2, 0], baseFret: 1 } ], // A E C# B E -> Correcto
+            '9': [ { frets: [5, 7, 5, 6, 5, 7], fingers: [1, 3, 1, 2, 1, 4], baseFret: 5, barre: { fret: 5, from: 0, to: 5 } } ],
+            'm9': [ { frets: [5, 7, 5, 5, 5, 7], fingers: [1, 3, 1, 1, 1, 4], baseFret: 5, barre: { fret: 5, from: 0, to: 5 } } ],
+            'Maj9': [ { frets: ['X', 0, 2, 1, 2, 2], fingers: [0, 0, 2, 1, 3, 4], baseFret: 1 } ],
             'min': [
                 { frets: ['X', 0, 2, 2, 1, 0], fingers: [0, 0, 2, 3, 1, 0], baseFret: 1 },
                 { frets: [5, 7, 7, 5, 5, 5], fingers: [1, 3, 4, 1, 1, 1], baseFret: 5, barre: { fret: 5, from: 0, to: 5 } },
@@ -152,6 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 { frets: ['X', 3, 5, 5, 5, 3], fingers: [0, 1, 3, 3, 3, 1], baseFret: 3, barre: { fret: 3, from: 1, to: 5 } },
                 { frets: [8, 10, 10, 9, 8, 8], fingers: [1, 3, 4, 2, 1, 1], baseFret: 8, barre: { fret: 8, from: 0, to: 5 } }
             ],
+            '6': [ { frets: ['X', 3, 2, 2, 1, 0], fingers: [0, 4, 2, 3, 1, 0], baseFret: 1 } ],
+            'm6': [ { frets: [8, 10, 10, 8, 9, 8], fingers: [1, 3, 4, 1, 2, 1], baseFret: 8, barre: { fret: 8, from: 0, to: 5 } } ],
+            'sus2': [ { frets: ['X', 3, 0, 0, 3, 'X'], fingers: [0, 2, 0, 0, 3, 0], baseFret: 1 } ], // C G C D -> Correcto
+            'sus4': [ { frets: ['X', 3, 3, 0, 1, 'X'], fingers: [0, 3, 4, 0, 1, 0], baseFret: 1 } ],
+            'add9': [ { frets: ['X', 3, 2, 0, 3, 0], fingers: [0, 2, 1, 0, 3, 0], baseFret: 1 } ], // C E G D G -> Correcto
+            '9': [ { frets: [8, 10, 8, 9, 8, 10], fingers: [1, 3, 1, 2, 1, 4], baseFret: 8, barre: { fret: 8, from: 0, to: 5 } } ],
+            'm9': [ { frets: [8, 10, 8, 8, 8, 10], fingers: [1, 3, 1, 1, 1, 4], baseFret: 8, barre: { fret: 8, from: 0, to: 5 } } ],
+            'Maj9': [ { frets: ['X', 3, 2, 4, 3, 'X'], fingers: [0, 2, 1, 4, 3, 0], baseFret: 2 } ],
             'min': [
                 { frets: ['X', 3, 5, 5, 4, 3], fingers: [0, 1, 3, 4, 2, 1], baseFret: 3, barre: { fret: 3, from: 1, to: 5 } },
                 { frets: [8, 10, 10, 8, 8, 8], fingers: [1, 3, 4, 1, 1, 1], baseFret: 8, barre: { fret: 8, from: 0, to: 5 } }
@@ -250,6 +266,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 { frets: [3, 5, 5, 4, 3, 3], fingers: [1, 3, 4, 2, 1, 1], baseFret: 3, barre: { fret: 3, from: 0, to: 5 } },
                 { frets: ['X', 10, 12, 12, 12, 10], fingers: [0, 1, 2, 3, 4, 1], baseFret: 10, barre: { fret: 10, from: 1, to: 5 } }
             ],
+            '6': [ { frets: [3, 2, 0, 0, 0, 0], fingers: [3, 2, 0, 0, 0, 0], baseFret: 1 } ],
+            'm6': [ { frets: [3, 'X', 2, 3, 3, 3], fingers: [2, 0, 1, 3, 4, 4], baseFret: 2 } ],
+            'sus2': [ { frets: ['X', 10, 12, 12, 10, 'X'], fingers: [0, 1, 3, 4, 2, 0], baseFret: 10 } ], // G D G A -> Correcto
+            'sus4': [ { frets: [3, 3, 0, 0, 1, 3], fingers: [3, 4, 0, 0, 1, 3], baseFret: 1 } ],
+            'add9': [ { frets: [3, 2, 0, 0, 3, 3], fingers: [2, 1, 0, 0, 3, 4], baseFret: 1 } ], // G B D G D G (A is implied or omitted, common voicing)
+            '9': [ { frets: [10, 12, 10, 11, 10, 12], fingers: [1, 3, 1, 2, 1, 4], baseFret: 10, barre: { fret: 10, from: 0, to: 5 } } ],
+            'm9': [ { frets: [10, 12, 10, 10, 10, 12], fingers: [1, 3, 1, 1, 1, 4], baseFret: 10, barre: { fret: 10, from: 0, to: 5 } } ],
+            'Maj9': [ { frets: [3, 'X', 4, 2, 3, 'X'], fingers: [2, 0, 4, 1, 3, 0], baseFret: 2 } ],
             'min': [
                 { frets: [3, 5, 5, 3, 3, 3], fingers: [1, 3, 4, 1, 1, 1], baseFret: 3, barre: { fret: 3, from: 0, to: 5 } },
                 { frets: ['X', 10, 12, 12, 11, 10], fingers: [0, 1, 3, 4, 2, 1], baseFret: 10, barre: { fret: 10, from: 1, to: 5 } }
@@ -528,7 +552,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ==========================================================================
        5. CONTROLADOR APP Y EVENTOS
        ========================================================================== */
-    const App = {
+    const ProgressionApp = {
         state: {
             rootNote: 'C',
             mode: 'major-natural',
@@ -724,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const selectedVIdx = this.state.selectedVoicings[slotIndex] || 0;
                 const activeVoicing = voicings[selectedVIdx] || voicings[0];
 
-                this.elements.grid.appendChild(UIBuilder.createChordCell(chordData, activeVoicing, slotIndex));
+                if (activeVoicing) this.elements.grid.appendChild(UIBuilder.createChordCell(chordData, activeVoicing, slotIndex));
             });
         },
 
@@ -774,5 +798,173 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    App.init();
+    /* ==========================================================================
+       6. NUEVO ENSAMBLADOR DE ACORDES
+       ========================================================================== */
+    const AssemblerApp = {
+        state: {
+            rootNote: 'C',
+            quality: 'Maj',
+            currentVoicings: [],
+            selectedVoicingIndex: 0,
+            sheetChords: [],
+        },
+
+        elements: {
+            rootSelect: document.getElementById('assembler-root-note'),
+            qualitySelect: document.getElementById('assembler-quality'),
+            voicingsContainer: document.getElementById('assembler-voicings-container'),
+            addBtn: document.getElementById('btn-add-chord-to-sheet'),
+            grid: document.getElementById('assembler-grid'),
+            header: document.getElementById('assembler-header'),
+        },
+
+        init() {
+            this.populateSelectors();
+            this.bindEvents();
+            this.updateVoicingChoices();
+            this.renderSheet();
+        },
+
+        populateSelectors() {
+            Theory.NOTES_SHARP.forEach(note => {
+                const opt = document.createElement('option');
+                opt.value = note;
+                opt.textContent = note;
+                this.elements.rootSelect.appendChild(opt);
+            });
+
+            const qualities = ['Maj', 'min', '7', 'm7', 'Maj7', '6', 'm6', 'dim', 'dim7', 'm7b5', 'Aug', 'sus2', 'sus4', 'add9', '9', 'm9', 'Maj9'];
+            qualities.forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q;
+                opt.textContent = q;
+                this.elements.qualitySelect.appendChild(opt);
+            });
+        },
+
+        bindEvents() {
+            this.elements.rootSelect.addEventListener('change', e => {
+                this.state.rootNote = e.target.value;
+                this.updateVoicingChoices();
+            });
+            this.elements.qualitySelect.addEventListener('change', e => {
+                this.state.quality = e.target.value;
+                this.updateVoicingChoices();
+            });
+            this.elements.addBtn.addEventListener('click', () => {
+                this.addChordToSheet();
+            });
+        },
+
+        updateVoicingChoices() {
+            this.state.currentVoicings = GuitarEngine.getVoicings(this.state.rootNote, this.state.quality);
+            this.state.selectedVoicingIndex = 0;
+            this.elements.voicingsContainer.innerHTML = '';
+
+            if (this.state.currentVoicings.length > 0) {
+                this.state.currentVoicings.forEach((voicing, index) => {
+                    const card = this.createVoicingCard(voicing, index);
+                    this.elements.voicingsContainer.appendChild(card);
+                });
+                this.elements.addBtn.disabled = false;
+            } else {
+                this.elements.voicingsContainer.innerHTML = `<p class="chord-svg-placeholder" style="grid-column: 1 / -1;">No se encontró un voicing para ${this.state.rootNote} ${this.state.quality}.</p>`;
+                this.elements.addBtn.disabled = true;
+            }
+        },
+
+        createVoicingCard(voicing, index) {
+            const chordName = `${this.state.rootNote} ${this.state.quality}`;
+            const card = document.createElement('article');
+            card.className = 'voicing-card voicing-card--preview';
+            if (index === this.state.selectedVoicingIndex) {
+                card.classList.add('voicing-card--selected');
+            }
+            
+            card.innerHTML = `<header class="voicing-card__header"><span class="voicing-card__number">Opción ${index + 1}</span></header>`;
+            
+            const svgContainer = document.createElement('div');
+            svgContainer.className = 'chord-svg-container';
+            svgContainer.appendChild(UIBuilder.buildSVG(voicing, chordName));
+            card.appendChild(svgContainer);
+
+            card.addEventListener('click', () => {
+                this.state.selectedVoicingIndex = index;
+                this.elements.voicingsContainer.querySelectorAll('.voicing-card').forEach((c, i) => {
+                    c.classList.toggle('voicing-card--selected', i === index);
+                });
+            });
+
+            return card;
+        },
+
+        addChordToSheet() {
+            const selectedVoicing = this.state.currentVoicings[this.state.selectedVoicingIndex];
+            if (!selectedVoicing) return;
+
+            this.state.sheetChords.push({
+                fullName: `${this.state.rootNote} ${this.state.quality}`,
+                voicing: selectedVoicing
+            });
+            this.renderSheet();
+        },
+
+        renderSheet() {
+            this.elements.grid.innerHTML = '';
+            this.state.sheetChords.forEach((chord, index) => {
+                const cell = this.createAssemblerCell(chord, index);
+                this.elements.grid.appendChild(cell);
+            });
+        },
+
+        createAssemblerCell(chordData, index) {
+            const section = document.createElement('section');
+            section.className = 'chord-cell';
+            
+            section.innerHTML = `
+                <header class="chord-cell__header">
+                    <h3 class="chord-cell__name">${chordData.fullName}</h3>
+                </header>
+                <div class="chord-svg-container"></div>
+                <footer class="chord-cell__footer">
+                    <button class="button button--delete" type="button" data-index="${index}">
+                        <span class="button__icon">🗑️</span> Eliminar
+                    </button>
+                </footer>
+            `;
+            
+            section.querySelector('.chord-svg-container').appendChild(UIBuilder.buildSVG(chordData.voicing, chordData.fullName));
+            section.querySelector('.button--delete').addEventListener('click', () => {
+                this.state.sheetChords.splice(index, 1);
+                this.renderSheet();
+            });
+
+            return section;
+        }
+    };
+
+    /* ==========================================================================
+       7. CONTROLADOR PRINCIPAL
+       ========================================================================== */
+    const MainController = {
+        init() {
+            ProgressionApp.init();
+            AssemblerApp.init();
+
+            document.querySelector('.app-header__nav').addEventListener('click', e => {
+                const target = e.target.closest('.button--nav');
+                if (!target) return;
+
+                document.querySelectorAll('.button--nav').forEach(b => b.classList.remove('button--nav-active'));
+                target.classList.add('button--nav-active');
+
+                document.getElementById('progression-generator-section').style.display = 'none';
+                document.getElementById('chord-assembler-section').style.display = 'none';
+                document.getElementById(target.dataset.section).style.display = 'block';
+            });
+        }
+    };
+
+    MainController.init();
 });

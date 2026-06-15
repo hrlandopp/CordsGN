@@ -12,14 +12,20 @@
     <!-- 4. COMPONENTE DE ACCIONES GLOBALES Y CABECERA -->
     <header class="app-header">
         <h1 class="app-header__title">GuitarChord</h1>
-        <nav class="app-header__actions">
+        <nav class="app-header__nav">
+            <button class="button button--nav button--nav-active" type="button" data-section="progression-generator-section">Generador de Progresiones</button>
+            <button class="button button--nav" type="button" data-section="chord-assembler-section">Ensamblador de Acordes</button>
+        </nav>
+        <div class="app-header__actions">
             <button class="button button--primary" type="button" id="btn-print-pdf">
                 <span class="button__icon">🖨️</span> Imprimir / Guardar en PDF
             </button>
-        </nav>
+        </div>
     </header>
 
-    <div class="app-layout">
+    <div id="app-content">
+        <main id="progression-generator-section">
+            <div class="app-layout">
         <!-- 1. COMPONENTE DE CONFIGURACIÓN DE TONALIDAD Y MODO (Sidebar) -->
         <aside class="config-panel">
             <section class="config-panel__section">
@@ -96,7 +102,7 @@
         </aside>
 
         <!-- 2. COMPONENTE DEL CONTENEDOR PRINCIPAL (Canvas de Impresión) -->
-        <main class="chord-sheet">
+        <div class="chord-sheet">
             <article class="chord-sheet__document">
                 <header class="chord-sheet__header">
                     <h2 class="chord-sheet__title">Hoja de Práctica: Progresión en C Major (Do Mayor)</h2>
@@ -233,9 +239,50 @@
 
                 </div>
             </article>
+        </div>
+            </div>
+        </main>
+
+        <main id="chord-assembler-section" class="app-layout" style="display: none;">
+            <aside class="config-panel">
+                <section class="config-panel__section">
+                    <h2 class="config-panel__subtitle">Catálogo de Acordes</h2>
+                    <p class="custom-progression__help-text" style="margin-bottom: 1.5rem;">
+                        Construye tu hoja de práctica seleccionando un acorde del catálogo y añadiéndolo.
+                    </p>
+                    <div class="form-control">
+                        <label class="form-control__label" for="assembler-root-note">Nota Raíz</label>
+                        <select class="form-control__select" id="assembler-root-note">
+                            <!-- Opciones generadas por JS -->
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label class="form-control__label" for="assembler-quality">Calidad del Acorde</label>
+                        <select class="form-control__select" id="assembler-quality">
+                            <!-- Opciones generadas por JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="assembler-preview">
+                        <h3 class="assembler-preview__title">Previsualización y Voicings</h3>
+                        <div id="assembler-voicings-container">
+                            <!-- Voicing cards generados por JS -->
+                        </div>
+                    </div>
+                    <button class="button button--primary" id="btn-add-chord-to-sheet" style="width: 100%; margin-top: 1.5rem;">Añadir a la Hoja</button>
+                </section>
+            </aside>
+            <div class="chord-sheet">
+                <article class="chord-sheet__document" id="assembler-sheet-document">
+                    <header class="chord-sheet__header" id="assembler-header">
+                        <h2 class="chord-sheet__title">Hoja de Práctica Personalizada</h2>
+                        <p class="chord-sheet__subtitle">Ensamblador de Acordes</p>
+                    </header>
+                    <div class="chord-grid" id="assembler-grid"></div>
+                </article>
+            </div>
         </main>
     </div>
-
     <!-- 3. COMPONENTE MODAL INTERACTIVO (Voicing Selector) -->
     <dialog class="modal" id="voicing-modal">
         <article class="modal__content">
