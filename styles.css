@@ -256,6 +256,12 @@ body {
     gap: 0.5rem;
     padding: 0.75rem;
     align-items: center;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.custom-progression__dropzone--dragover {
+    border-color: var(--accent-color);
+    background-color: #eef2ff; /* Un acento de color sutil */
 }
 
 .custom-progression__slot {
@@ -626,6 +632,54 @@ body {
     font-size: 0.8rem;
 }
 
+/* ==========================================================================
+   7. COMPONENTES ESPECÍFICOS DEL EXPLORADOR DE ESCALAS
+   ========================================================================== */
+.fretboard-container {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-ui);
+    padding: 2rem;
+    overflow-x: auto; /* Para diapasones largos en pantallas pequeñas */
+}
+
+.fretboard-svg {
+    width: 100%;
+    min-width: 800px; /* Evita que el diapasón se comprima demasiado */
+    height: auto;
+    overflow: visible;
+}
+
+.fretboard-svg__note {
+    transition: all 0.2s ease;
+    cursor: pointer; /* Sugiere interactividad */
+}
+
+.fretboard-svg__note:hover .fretboard-svg__note-dot {
+    transform: scale(1.1);
+    stroke: var(--primary-color);
+}
+
+.fretboard-svg__note-dot {
+    stroke: #64748b;
+    stroke-width: 1.5;
+    fill: #f1f5f9;
+}
+
+.fretboard-svg__note-dot--root {
+    fill: #dc2626; /* Rojo para la tónica */
+    stroke: #b91c1c;
+}
+
+.fretboard-svg__note-text {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    fill: #1e293b;
+    text-anchor: middle;
+    pointer-events: none; /* Para que no interfiera con el clic en el círculo */
+}
 /* ==========================================================================
    RESPONSIVE DESIGN (Pantallas menores)
    ========================================================================== */

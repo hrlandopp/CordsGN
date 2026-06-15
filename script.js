@@ -86,6 +86,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     fullName: `${noteSpelling} ${degree.quality}`
                 };
             });
+        },
+
+        generateScaleNotes(rootName, mode) {
+            let rootIndex = this.NOTES_SHARP.indexOf(rootName);
+            if (rootIndex === -1) rootIndex = this.NOTES_FLAT.indexOf(rootName);
+
+            const intervals = this.SCALE_INTERVALS[mode];
+            const ALPHABET = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+            const rootAlphaIdx = ALPHABET.indexOf(rootName[0]);
+
+            return intervals.map((interval, index) => {
+                const noteIndex = (rootIndex + interval) % 12;
+                const expectedLetter = ALPHABET[(rootAlphaIdx + index) % 7];
+                return this.getNoteSpelling(noteIndex, expectedLetter);
+            });
         }
     };
 
@@ -945,12 +960,149 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /* ==========================================================================
-       7. CONTROLADOR PRINCIPAL
+       7. NUEVO EXPLORADOR DE ESCALAS
+       ========================================================================== */
+    const ScaleExplorerApp = {
+        state: {
+            rootNote: 'C',
+            mode: 'major-natural',
+        },
+
+        elements: {
+            rootSelect: document.getElementById('scale-explorer-root'),
+            modeSelect: document.getElementById('scale-explorer-mode'),
+            fretboardContainer: document.getElementById('scale-explorer-fretboard'),
+        },
+
+        constants: {
+            TUNING: [4, 9, 14, 19, 23, 28], // EADGBe como índices desde C=0, E=4
+            NUM_FRETS: 15,
+        },
+
+        init() {
+            this.populateSelectors();
+            this.bindEvents();
+            this.renderFretboard();
+        },
+
+        populateSelectors() {
+            Theory.NOTES_SHARP.forEach(note => {
+                const opt = document.createElement('option');
+                opt.value = note;
+                opt.textContent = note;
+                this.elements.rootSelect.appendChild(opt);
+            });
+
+            for (const mode in Theory.SCALE_INTERVALS) {
+                const opt = document.createElement('option');
+                opt.value = mode;
+                opt.textContent = document.querySelector(`#scale-mode option[value="${mode}"]`).textContent;
+                this.elements.modeSelect.appendChild(opt);
+            }
+        },
+
+        bindEvents() {
+            this.elements.rootSelect.addEventListener('change', e => {
+                this.state.rootNote = e.target.value;
+                this.renderFretboard();
+            });
+            this.elements.modeSelect.addEventListener('change', e => {
+                this.state.mode = e.target.value;
+                this.renderFretboard();
+            });
+        },
+
+        renderFretboard() {
+            const scaleNotes = Theory.generateScaleNotes(this.state.rootNote, this.state.mode);
+            const tuning = this.constants.TUNING;
+            const numFrets = this.constants.NUM_FRETS;
+
+            const svg = UIBuilder.createSVGElement('svg', {
+                class: 'fretboard-svg',
+                viewBox: `0 0 ${80 + numFrets * 50} 140`
+            });
+
+            // Render Frets and Strings
+            const gridGrp = UIBuilder.createSVGElement('g', { transform: 'translate(50, 20)' });
+            for (let i = 0; i <= numFrets; i++) { // Frets
+                gridGrp.appendChild(UIBuilder.createSVGElement('line', {
+                    x1: i * 50, y1: 0, x2: i * 50, y2: 100,
+                    stroke: '#ccc', 'stroke-width': (i === 0) ? 5 : 1
+                }));
+            }
+            for (let i = 0; i < 6; i++) { // Strings
+                gridGrp.appendChild(UIBuilder.createSVGElement('line', {
+                    x1: 0, y1: i * 20, x2: numFrets * 50, y2: i * 20,
+                    stroke: '#333', 'stroke-width': 1 + (i * 0.2)
+                }));
+            }
+            svg.appendChild(gridGrp);
+
+            // Render Fret Markers (3, 5, 7, 9, 12)
+            const markers = [3, 5, 7, 9, 12];
+            markers.forEach(fret => {
+                const marker = UIBuilder.createSVGElement('circle', {
+                    cx: fret * 50 - 25,
+                    cy: (fret === 12) ? 30 : 50,
+                    r: 5,
+                    fill: '#ddd'
+                });
+                gridGrp.appendChild(marker);
+                if (fret === 12) {
+                     const marker2 = UIBuilder.createSVGElement('circle', {
+                        cx: fret * 50 - 25, cy: 70, r: 5, fill: '#ddd'
+                    });
+                    gridGrp.appendChild(marker2);
+                }
+            });
+
+            // Render Scale Notes
+            const notesGrp = UIBuilder.createSVGElement('g', { transform: 'translate(50, 20)' });
+            for (let str = 0; str < 6; str++) {
+                for (let fret = 0; fret <= numFrets; fret++) {
+                    const noteIndex = (tuning[str] + fret) % 12;
+                    const currentNote = Theory.NOTES_SHARP[noteIndex];
+                    const currentNoteFlat = Theory.NOTES_FLAT[noteIndex];
+
+                    if (scaleNotes.includes(currentNote) || scaleNotes.includes(currentNoteFlat)) {
+                        const noteName = scaleNotes.find(n => n === currentNote || n === currentNoteFlat);
+                        const isRoot = noteName === this.state.rootNote;
+
+                        const noteGroup = UIBuilder.createSVGElement('g', { class: 'fretboard-svg__note' });
+                        // FIX: Posiciona correctamente las notas al aire (traste 0) a la izquierda de la cejuela.
+                        const x = (fret > 0) ? (fret * 50 - 25) : -20;
+                        const y = str * 20;
+
+                        const dot = UIBuilder.createSVGElement('circle', {
+                            cx: x, cy: y, r: 9,
+                            class: `fretboard-svg__note-dot ${isRoot ? 'fretboard-svg__note-dot--root' : ''}`
+                        });
+
+                        const text = UIBuilder.createSVGElement('text', {
+                            x: x, y: y + 4, class: 'fretboard-svg__note-text'
+                        });
+                        text.textContent = noteName;
+
+                        noteGroup.append(dot, text);
+                        notesGrp.appendChild(noteGroup);
+                    }
+                }
+            }
+            svg.appendChild(notesGrp);
+
+            this.elements.fretboardContainer.innerHTML = '';
+            this.elements.fretboardContainer.appendChild(svg);
+        }
+    };
+
+    /* ==========================================================================
+       8. CONTROLADOR PRINCIPAL
        ========================================================================== */
     const MainController = {
         init() {
             ProgressionApp.init();
             AssemblerApp.init();
+            ScaleExplorerApp.init();
 
             document.querySelector('.app-header__nav').addEventListener('click', e => {
                 const target = e.target.closest('.button--nav');
@@ -961,6 +1113,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 document.getElementById('progression-generator-section').style.display = 'none';
                 document.getElementById('chord-assembler-section').style.display = 'none';
+                document.getElementById('scale-explorer-section').style.display = 'none';
                 document.getElementById(target.dataset.section).style.display = 'block';
             });
         }

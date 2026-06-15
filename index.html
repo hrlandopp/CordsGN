@@ -15,6 +15,7 @@
         <nav class="app-header__nav">
             <button class="button button--nav button--nav-active" type="button" data-section="progression-generator-section">Generador de Progresiones</button>
             <button class="button button--nav" type="button" data-section="chord-assembler-section">Ensamblador de Acordes</button>
+            <button class="button button--nav" type="button" data-section="scale-explorer-section">Explorador de Escalas</button>
         </nav>
         <div class="app-header__actions">
             <button class="button button--primary" type="button" id="btn-print-pdf">
@@ -280,6 +281,29 @@
                     </header>
                     <div class="chord-grid" id="assembler-grid"></div>
                 </article>
+            </div>
+        </main>
+
+        <main id="scale-explorer-section" class="app-layout" style="display: none;">
+            <aside class="config-panel">
+                <section class="config-panel__section">
+                    <h2 class="config-panel__subtitle">Configuración de Escala</h2>
+                    <div class="form-control">
+                        <label class="form-control__label" for="scale-explorer-root">Nota Raíz</label>
+                        <select class="form-control__select" id="scale-explorer-root">
+                            <!-- Opciones generadas por JS -->
+                        </select>
+                    </div>
+                    <div class="form-control">
+                        <label class="form-control__label" for="scale-explorer-mode">Modo / Escala</label>
+                        <select class="form-control__select" id="scale-explorer-mode">
+                            <!-- Opciones generadas por JS -->
+                        </select>
+                    </div>
+                </section>
+            </aside>
+            <div class="fretboard-container" id="scale-explorer-fretboard">
+                <!-- El diagrama del diapasón completo será renderizado aquí por JS -->
             </div>
         </main>
     </div>
