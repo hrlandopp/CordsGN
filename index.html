@@ -15,22 +15,13 @@
     <header class="app-header">
         <h1 class="app-header__title">GuitarChord</h1>
         <nav class="app-header__nav">
-            <div class="nav-desktop">
-                <button class="button button--nav button--nav-active" type="button" data-section="progression-generator-section">Generador de Progresiones</button>
-                <button class="button button--nav" type="button" data-section="chord-assembler-section">Ensamblador de Acordes</button>
-                <button class="button button--nav" type="button" data-section="scale-explorer-section">Explorador de Escalas</button>
-            </div>
-            <div class="nav-mobile">
-                <select id="mobile-nav-select" class="form-control__select">
-                    <option value="progression-generator-section">Generador de Progresiones</option>
-                    <option value="chord-assembler-section">Ensamblador de Acordes</option>
-                    <option value="scale-explorer-section">Explorador de Escalas</option>
-                </select>
-            </div>
+            <button class="button button--nav button--nav-active" type="button" data-section="progression-generator-section">Generador<span class="hide-mobile"> de Progresiones</span></button>
+            <button class="button button--nav" type="button" data-section="chord-assembler-section">Ensamblador<span class="hide-mobile"> de Acordes</span></button>
+            <button class="button button--nav" type="button" data-section="scale-explorer-section">Explorador<span class="hide-mobile"> de Escalas</span></button>
         </nav>
         <div class="app-header__actions">
             <button class="button button--primary" type="button" id="btn-print-pdf">
-                <span class="button__icon">🖨️</span> Imprimir / Guardar en PDF
+                <span class="button__icon">🖨️</span> Imprimir<span class="hide-mobile"> / Guardar en PDF</span>
             </button>
         </div>
     </header>
