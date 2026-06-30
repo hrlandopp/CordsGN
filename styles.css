@@ -759,14 +759,43 @@ body {
 @media screen and (max-width: 768px) {
     .app-layout {
         grid-template-columns: 1fr;
+        padding: 1rem;
+        gap: 1.5rem;
     }
     
+    .app-header {
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .app-header__nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .button--nav {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+    }
+
     .config-panel {
         position: static;
     }
     
     .chord-sheet__document {
-        padding: 2rem 1.5rem;
+        padding: 1.5rem 1rem;
+    }
+
+    .chord-grid {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 1rem;
+    }
+
+    .custom-progression__pool, .custom-progression__dropzone {
+        justify-content: center;
     }
 }
 
