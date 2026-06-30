@@ -1483,18 +1483,25 @@ document.addEventListener('DOMContentLoaded', () => {
             AssemblerApp.init();
             ScaleExplorerApp.init();
 
-            document.querySelector('.app-header__nav').addEventListener('click', e => {
-                const target = e.target.closest('.button--nav');
-                if (!target) return;
+            const switchSection = (sectionId) => {
+                // Update desktop buttons
+                document.querySelectorAll('.button--nav').forEach(b => {
+                    if (b.dataset.section === sectionId) b.classList.add('button--nav-active');
+                    else b.classList.remove('button--nav-active');
+                });
+                
+                // Update mobile select
+                const mobileSelect = document.getElementById('mobile-nav-select');
+                if (mobileSelect && mobileSelect.value !== sectionId) {
+                    mobileSelect.value = sectionId;
+                }
 
-                document.querySelectorAll('.button--nav').forEach(b => b.classList.remove('button--nav-active'));
-                target.classList.add('button--nav-active');
-
+                // Hide all sections
                 document.getElementById('progression-generator-section').style.display = 'none';
                 document.getElementById('chord-assembler-section').style.display = 'none';
                 document.getElementById('scale-explorer-section').style.display = 'none';
                 
-                const sectionId = target.dataset.section;
+                // Show target section
                 document.getElementById(sectionId).style.display = 'block';
 
                 // Lógica de impresión: aplicar horizontal (landscape) solo al Explorador de Escalas
@@ -1509,7 +1516,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     if (styleEl) styleEl.remove();
                 }
+            };
+
+            document.querySelector('.app-header__nav').addEventListener('click', e => {
+                const target = e.target.closest('.button--nav');
+                if (!target) return;
+                switchSection(target.dataset.section);
             });
+
+            const mobileNavSelect = document.getElementById('mobile-nav-select');
+            if (mobileNavSelect) {
+                mobileNavSelect.addEventListener('change', e => {
+                    switchSection(e.target.value);
+                });
+            }
         }
     };
 

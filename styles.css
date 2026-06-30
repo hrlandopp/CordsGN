@@ -139,6 +139,17 @@ body {
     margin: 0 auto;
 }
 
+.nav-desktop {
+    display: flex;
+    gap: 0.5rem;
+    height: 100%;
+}
+
+.nav-mobile {
+    display: none;
+    width: 100%;
+}
+
 .button--nav {
     background-color: transparent;
     color: var(--text-muted);
@@ -768,17 +779,27 @@ body {
         padding: 1rem;
         gap: 1rem;
         text-align: center;
+        align-items: stretch;
     }
 
     .app-header__nav {
         flex-wrap: wrap;
         justify-content: center;
         width: 100%;
+        align-items: center;
     }
     
-    .button--nav {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.8rem;
+    .nav-desktop {
+        display: none;
+    }
+    
+    .nav-mobile {
+        display: block;
+    }
+
+    .app-header__actions {
+        display: flex;
+        justify-content: center;
     }
 
     .config-panel {
