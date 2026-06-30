@@ -187,6 +187,9 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    position: sticky;
+    top: 80px; /* Espacio para la cabecera fija */
+    align-self: start;
 }
 
 .config-panel__subtitle {
@@ -312,8 +315,8 @@ body {
 /* Grid de acordes (Máximo 4 columnas por fila en Desktop) */
 .chord-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.5rem 1rem;
 }
 
 .chord-cell {
@@ -321,7 +324,7 @@ body {
     flex-direction: column;
     align-items: center;
     border: 1px solid transparent; /* Preparado para print */
-    padding: 1rem;
+    padding: 0.75rem;
     border-radius: var(--radius-md);
     transition: border-color 0.2s;
 }
@@ -349,16 +352,16 @@ body {
 
 .chord-cell__name {
     font-family: var(--font-serif);
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: bold;
     color: var(--score-black);
 }
 
 .chord-svg-container {
     width: 100%;
-    max-width: 160px;
+    max-width: 120px;
     aspect-ratio: 6/7;
-    margin: 0 auto 1rem auto;
+    margin: 0 auto 0.75rem auto;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -375,6 +378,48 @@ body {
     width: 100%;
     display: flex;
     justify-content: center;
+}
+.chord-cell__footer .button {
+    flex-grow: 1;
+}
+
+.button--play {
+    background-color: #10b981;
+    color: #ffffff;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 9999px; /* Estilo píldora */
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3), 0 2px 4px -2px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.button--play:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px -1px rgba(16, 185, 129, 0.4), 0 4px 6px -2px rgba(16, 185, 129, 0.4);
+}
+
+.button--play:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px -1px rgba(16, 185, 129, 0.3);
+}
+
+.button--play.is-playing {
+    background-color: #ef4444;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3), 0 2px 4px -2px rgba(239, 68, 68, 0.3);
+}
+
+.button--play.is-playing:hover {
+    background-color: #dc2626;
+    box-shadow: 0 6px 10px -1px rgba(239, 68, 68, 0.4), 0 4px 6px -2px rgba(239, 68, 68, 0.4);
+}
+
+.button--play .button__icon {
+    font-size: 1.1rem;
+    transform: translateY(1px);
+    margin-right: 0.3rem;
 }
 
 .chord-cell__footer .button--edit {
@@ -545,53 +590,73 @@ body {
 /* ==========================================================================
    6. COMPONENTES ESPECÍFICOS DEL ENSAMBLADOR
    ========================================================================== */
-.assembler-preview {
-    margin-top: 2rem;
-    margin-bottom: 1.5rem;
+
+/* Header del ensamblador con botón de play */
+#assembler-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
-.assembler-preview__title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    color: var(--text-muted);
+#assembler-header > div {
+    text-align: left;
 }
 
-#assembler-voicings-container {
+/* Paleta de acordes diatónicos */
+.diatonic-palette {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 0.75rem;
 }
 
-.voicing-card--preview {
-    padding: 0.75rem;
-    cursor: pointer;
-    border: 2px solid var(--border-ui);
-    border-radius: var(--radius-md);
-    transition: all 0.2s ease;
-    background-color: var(--bg-surface);
-}
-
-.voicing-card--preview:hover {
-    border-color: var(--accent-color);
-    transform: translateY(-2px);
-}
-
-.voicing-card--preview.voicing-card--selected {
-    border-color: var(--primary-color);
-    background-color: #f8fafc;
-    box-shadow: var(--shadow-sm);
-}
-
-.voicing-card--preview .chord-svg-container {
-    max-width: 100px;
-    margin: 0 auto 0.5rem;
-}
-
-.voicing-card--preview .voicing-card__header {
+.diatonic-palette .degree-btn {
+    padding: 0.75rem 0.25rem;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    height: auto;
+    line-height: 1.2;
     text-align: center;
-    margin-bottom: 0.5rem;
-    font-size: 0.75rem;
+}
+
+.diatonic-palette .degree-btn__chord {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Controles de maquetación */
+.layout-controls {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Espacio en blanco en la cuadrícula */
+.chord-grid__blank-slot {
+    border: 2px dashed var(--border-ui);
+    border-radius: var(--radius-md);
+    min-height: 200px;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+.chord-grid__blank-slot:hover {
+    background-color: var(--bg-app);
+}
+
+.chord-grid__blank-slot .button--delete {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+    padding: 0.25rem 0.5rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.chord-grid__blank-slot:hover .button--delete {
+    opacity: 1;
 }
 
 /* Empty state for assembler grid */
@@ -720,6 +785,7 @@ body {
     .config-panel,
     .chord-cell__footer,
     .modal,
+    .no-print,
     .app-header__actions {
         display: none !important;
     }

@@ -47,6 +47,22 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         },
 
+        CHORD_INTERVALS: {
+            'Maj': [0, 4, 7], 'min': [0, 3, 7], '7': [0, 4, 7, 10], 'm7': [0, 3, 7, 10],
+            'Maj7': [0, 4, 7, 11], 'mMaj7': [0, 3, 7, 11], 'dim': [0, 3, 6], 'dim7': [0, 3, 6, 9],
+            'Aug': [0, 4, 8], 'm7b5': [0, 3, 6, 10], '6': [0, 4, 7, 9], 'm6': [0, 3, 7, 9],
+            'sus2': [0, 2, 7], 'sus4': [0, 5, 7], 'add9': [0, 4, 7, 14], '9': [0, 4, 7, 10, 14],
+            'm9': [0, 3, 7, 10, 14], 'Maj9': [0, 4, 7, 11, 14]
+        },
+
+        getNotesInChord(rootNote, quality, octave = 4) {
+            const intervals = this.CHORD_INTERVALS[quality] || this.CHORD_INTERVALS['Maj'];
+            let rootIndex = this.NOTES_SHARP.indexOf(rootNote);
+            if (rootIndex === -1) rootIndex = this.NOTES_FLAT.indexOf(rootNote);
+
+            return intervals.map(interval => this.NOTES_SHARP[(rootIndex + interval) % 12] + octave);
+        },
+
         getNoteSpelling(noteIndex, expectedLetter) {
             const sharpNote = this.NOTES_SHARP[noteIndex];
             const flatNote = this.NOTES_FLAT[noteIndex];
@@ -436,7 +452,37 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return shiftedVoicings.slice(0, 5);
-        }
+        },
+
+        calculateVoicingDistance(voicingA, voicingB) {
+            let distance = 0;
+            const PENALTY = 4; // Penalización por cambiar entre nota pisada y cuerda al aire/muteada
+
+            for (let i = 0; i < 6; i++) {
+                const fretA = voicingA.frets[i];
+                const fretB = voicingB.frets[i];
+
+                const isNumericA = typeof fretA === 'number';
+                const isNumericB = typeof fretB === 'number';
+
+                if (isNumericA && isNumericB) {
+                    distance += Math.abs(fretA - fretB);
+                } else if (fretA !== fretB) {
+                    distance += PENALTY;
+                }
+            }
+            return distance;
+        },
+
+        getVoicingsSortedByProximity(rootNote, quality, previousVoicing) {
+            const voicings = this.getVoicings(rootNote, quality);
+            if (!previousVoicing || voicings.length <= 1) return voicings;
+
+            return voicings
+                .map(v => ({ voicing: v, distance: this.calculateVoicingDistance(previousVoicing, v) }))
+                .sort((a, b) => a.distance - b.distance)
+                .map(item => item.voicing);
+        },
     };
 
     /* ==========================================================================
@@ -565,6 +611,66 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /* ==========================================================================
+       NUEVO MOTOR DE AUDIO
+       ========================================================================== */
+    const AudioEngine = {
+        sampler: null,
+        isReady: false,
+
+        init() {
+            // NOTA PARA EL DESARROLLADOR:
+            // Para que esto funcione, necesitas una carpeta /samples/ con archivos de audio.
+            // Por ejemplo: C4.mp3, G4.mp3, etc.
+            // Puedes encontrar muestras gratuitas de guitarra online ("Free Guitar Note Samples").
+            this.sampler = new Tone.Sampler({
+                urls: {
+                    "C4": "C4.mp3",
+                    "D#4": "Ds4.mp3",
+                    "F#4": "Fs4.mp3",
+                    "A4": "A4.mp3",
+                },
+                release: 1,
+                baseUrl: "https://tonejs.github.io/audio/salamander/", // Usamos samples de ejemplo de Tone.js
+            }).toDestination();
+
+            Tone.loaded().then(() => {
+                this.isReady = true;
+                console.log("Motor de audio listo.");
+            });
+        },
+
+        async playChord(rootNote, quality) {
+            if (!this.isReady) return;
+            await Tone.start(); // El contexto de audio debe iniciarse con un gesto del usuario.
+            const notes = Theory.getNotesInChord(rootNote, quality);
+            this.sampler.triggerAttackRelease(notes, "2n");
+        },
+
+        async playSequence(chords) {
+            if (!this.isReady || chords.length === 0) return;
+            await Tone.start();
+
+            const notesToPlay = chords.filter(c => c !== null); // Ignorar espacios en blanco
+            if (notesToPlay.length === 0) return;
+
+            // Detener y limpiar cualquier secuencia anterior
+            Tone.Transport.stop();
+            Tone.Transport.cancel();
+
+            new Tone.Sequence((time, chord) => {
+                const notes = Theory.getNotesInChord(chord.fullName.split(' ')[0], chord.fullName.split(' ')[1]);
+                this.sampler.triggerAttackRelease(notes, '1n', time);
+            }, notesToPlay, '1m').start(0);
+
+            Tone.Transport.start();
+        },
+
+        stopSequence() {
+            Tone.Transport.stop();
+        }
+    };
+
+    /* ==========================================================================
        5. CONTROLADOR APP Y EVENTOS
        ========================================================================== */
     const ProgressionApp = {
@@ -590,7 +696,8 @@ document.addEventListener('DOMContentLoaded', () => {
             modalClose: document.getElementById('btn-close-modal'),
             modalTitle: document.querySelector('.modal__dynamic-chord-name'),
             modalGrid: document.querySelector('.voicing-grid'),
-            printBtn: document.getElementById('btn-print-pdf')
+            printBtn: document.getElementById('btn-print-pdf'),
+            playBtn: document.getElementById('btn-play-generator')
         },
 
         init() {
@@ -604,18 +711,46 @@ document.addEventListener('DOMContentLoaded', () => {
             
             this.elements.presetSelect.addEventListener('change', (e) => {
                 const val = e.target.value;
+                
+                // Limpiar voicings al cambiar de progresión para evitar arrastres extraños
+                this.state.selectedVoicings = {};
+
                 if (val === 'I-IV-V-I') this.state.progressionSeq = [0, 3, 4, 0];
-                if (val === 'ii-V-I') this.state.progressionSeq = [1, 4, 0];
-                if (val === 'I-vi-IV-V') this.state.progressionSeq = [0, 5, 3, 4];
-                if (val === 'I-V-vi-IV') this.state.progressionSeq = [0, 4, 5, 3];
-                if (val === 'vi-IV-I-V') this.state.progressionSeq = [5, 3, 0, 4];
-                if (val === 'I-vi-ii-V') this.state.progressionSeq = [0, 5, 1, 4];
+                else if (val === 'I-V-vi-IV') this.state.progressionSeq = [0, 4, 5, 3];
+                else if (val === 'vi-IV-I-V') this.state.progressionSeq = [5, 3, 0, 4];
+                else if (val === 'I-vi-IV-V') this.state.progressionSeq = [0, 5, 3, 4];
+                else if (val === 'ii-V-I') this.state.progressionSeq = [1, 4, 0];
+                else if (val === 'vi-ii-V-I') this.state.progressionSeq = [5, 1, 4, 0];
+                else if (val === 'I-vi-ii-V') this.state.progressionSeq = [0, 5, 1, 4];
+                else if (val === 'I-III-IV-iv') this.state.progressionSeq = [0, 2, 3, 3];
+                else if (val === 'i-VI-III-VII') this.state.progressionSeq = [0, 5, 2, 6];
+                else if (val === 'i-iv-v-i') this.state.progressionSeq = [0, 3, 4, 0];
+                
                 this.syncDropzoneUI();
                 this.renderSheet();
             });
 
             this.elements.printBtn.addEventListener('click', () => window.print());
             this.elements.modalClose.addEventListener('click', () => this.elements.modal.close());
+            
+            this.elements.playBtn.addEventListener('click', () => {
+                if (Tone.Transport.state === 'started') {
+                    AudioEngine.stopSequence();
+                } else {
+                    const chordsToPlay = this.state.progressionSeq.map(idx => this.state.chords[idx]);
+                    AudioEngine.playSequence(chordsToPlay);
+                    this.elements.playBtn.innerHTML = `<span class="button__icon">■</span> Detener`;
+                    this.elements.playBtn.classList.add('is-playing');
+                }
+            });
+
+            // Sincronizar el estado del botón cuando el audio termina o se detiene
+            Tone.Transport.on('stop', () => {
+                if (this.elements.playBtn) {
+                    this.elements.playBtn.innerHTML = `<span class="button__icon">▶</span> Reproducir Progresión`;
+                    this.elements.playBtn.classList.remove('is-playing');
+                }
+            });
             
             this.elements.grid.addEventListener('click', (e) => {
                 const btn = e.target.closest('.button--edit');
@@ -642,7 +777,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.elements.pool.addEventListener('drop', (e) => {
                 e.preventDefault();
                 const action = e.dataTransfer.getData('action');
-                if (action === 'remove') {
+                if (action === 'move_or_remove') {
                     const slotIndex = parseInt(e.dataTransfer.getData('index'), 10);
                     this.removeChordFromProgression(slotIndex);
                 }
@@ -651,7 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Eventos para arrastrar los acordes que ya están dentro de la progresión
             this.elements.dropzone.addEventListener('dragstart', (e) => {
                 if (e.target.classList.contains('custom-progression__slot')) {
-                    e.dataTransfer.setData('action', 'remove');
+                    e.dataTransfer.setData('action', 'move_or_remove');
                     e.dataTransfer.setData('index', e.target.dataset.slotIndex);
                     e.target.style.opacity = '0.5';
                 }
@@ -660,25 +795,50 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.target.classList.contains('custom-progression__slot')) e.target.style.opacity = '1';
             });
 
-            this.elements.dropzone.addEventListener('dragover', (e) => e.preventDefault());
+            this.elements.dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                // Opcional: mostrar feedback visual aquí
+            });
+            
             this.elements.dropzone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 const action = e.dataTransfer.getData('action');
+                const targetSlot = e.target.closest('.custom-progression__slot');
+                
                 if (action === 'add') {
                     const degreeIndexStr = e.dataTransfer.getData('index');
                     if (degreeIndexStr !== '') {
-                        this.state.progressionSeq.push(parseInt(degreeIndexStr, 10));
+                        if (targetSlot) {
+                            const targetIndex = parseInt(targetSlot.dataset.slotIndex, 10);
+                            this.state.progressionSeq.splice(targetIndex, 0, parseInt(degreeIndexStr, 10));
+                        } else {
+                            this.state.progressionSeq.push(parseInt(degreeIndexStr, 10));
+                        }
+                        
+                        // Recalcular voicings al insertar en medio
+                        if (targetSlot) {
+                            const targetIndex = parseInt(targetSlot.dataset.slotIndex, 10);
+                            const newVoicings = {};
+                            for (const key in this.state.selectedVoicings) {
+                                const k = parseInt(key, 10);
+                                if (k >= targetIndex) newVoicings[k + 1] = this.state.selectedVoicings[key];
+                                else newVoicings[k] = this.state.selectedVoicings[key];
+                            }
+                            this.state.selectedVoicings = newVoicings;
+                        }
+
                         this.syncDropzoneUI();
                         this.renderSheet();
                     }
-                } 
-                // Fallback de compatibilidad
-                else if (!action) {
-                    const degreeIndexStr = e.dataTransfer.getData('text/plain');
-                    if (degreeIndexStr && !isNaN(degreeIndexStr)) {
-                        this.state.progressionSeq.push(parseInt(degreeIndexStr, 10));
-                        this.syncDropzoneUI();
-                        this.renderSheet();
+                } else if (action === 'move_or_remove') {
+                    const fromIndex = parseInt(e.dataTransfer.getData('index'), 10);
+                    if (targetSlot) {
+                        const toIndex = parseInt(targetSlot.dataset.slotIndex, 10);
+                        this.reorderProgression(fromIndex, toIndex);
+                    } else {
+                        // Si lo sueltan al final del dropzone (espacio en blanco)
+                        const toIndex = this.state.progressionSeq.length - 1;
+                        this.reorderProgression(fromIndex, toIndex);
                     }
                 }
             });
@@ -691,6 +851,31 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
+        },
+
+        reorderProgression(fromIndex, toIndex) {
+            if (fromIndex === toIndex) return;
+            
+            const element = this.state.progressionSeq.splice(fromIndex, 1)[0];
+            this.state.progressionSeq.splice(toIndex, 0, element);
+
+            const newVoicings = {};
+            for (const key in this.state.selectedVoicings) {
+                const k = parseInt(key, 10);
+                if (k === fromIndex) {
+                    newVoicings[toIndex] = this.state.selectedVoicings[key];
+                } else if (fromIndex < toIndex && k > fromIndex && k <= toIndex) {
+                    newVoicings[k - 1] = this.state.selectedVoicings[key];
+                } else if (fromIndex > toIndex && k >= toIndex && k < fromIndex) {
+                    newVoicings[k + 1] = this.state.selectedVoicings[key];
+                } else {
+                    newVoicings[k] = this.state.selectedVoicings[key];
+                }
+            }
+            this.state.selectedVoicings = newVoicings;
+
+            this.syncDropzoneUI();
+            this.renderSheet();
         },
 
         removeChordFromProgression(slotIndex) {
@@ -818,144 +1003,338 @@ document.addEventListener('DOMContentLoaded', () => {
        ========================================================================== */
     const AssemblerApp = {
         state: {
-            rootNote: 'C',
-            quality: 'Maj',
-            currentVoicings: [],
-            selectedVoicingIndex: 0,
+            keyRoot: 'C',
+            keyMode: 'major-natural',
+            diatonicChords: [],
             sheetChords: [],
         },
 
         elements: {
-            rootSelect: document.getElementById('assembler-root-note'),
-            qualitySelect: document.getElementById('assembler-quality'),
-            voicingsContainer: document.getElementById('assembler-voicings-container'),
-            addBtn: document.getElementById('btn-add-chord-to-sheet'),
+            keyRootSelect: document.getElementById('assembler-key-root'),
+            keyModeSelect: document.getElementById('assembler-key-mode'),
+            pool: document.getElementById('assembler-pool'),
+            dropzone: document.getElementById('assembler-dropzone'),
+            addBlankBtn: document.getElementById('btn-add-blank-slot'),
+            clearSheetBtn: document.getElementById('btn-clear-sheet'),
+            playSequenceBtn: document.getElementById('btn-play-sequence'),
             grid: document.getElementById('assembler-grid'),
-            header: document.getElementById('assembler-header'),
+            subtitle: document.getElementById('assembler-subtitle'),
+            modal: document.getElementById('voicing-modal'),
+            modalClose: document.getElementById('btn-close-modal'),
+            modalTitle: document.querySelector('.modal__dynamic-chord-name'),
+            modalGrid: document.querySelector('.voicing-grid'),
         },
 
         init() {
-            this.populateSelectors();
+            AudioEngine.init(); // Inicializar el motor de audio
+            this.populateKeySelectors();
             this.bindEvents();
-            this.updateVoicingChoices();
-            this.renderSheet();
+            this.updateDiatonicPalette();
+            this.prePopulateSheet();
+            this.setupDragAndDrop();
         },
 
-        populateSelectors() {
+        populateKeySelectors() {
             Theory.NOTES_SHARP.forEach(note => {
                 const opt = document.createElement('option');
                 opt.value = note;
                 opt.textContent = note;
-                this.elements.rootSelect.appendChild(opt);
+                this.elements.keyRootSelect.appendChild(opt);
             });
 
-            const qualities = ['Maj', 'min', '7', 'm7', 'Maj7', '6', 'm6', 'dim', 'dim7', 'm7b5', 'Aug', 'sus2', 'sus4', 'add9', '9', 'm9', 'Maj9'];
-            qualities.forEach(q => {
+            for (const mode in Theory.SCALE_INTERVALS) {
                 const opt = document.createElement('option');
-                opt.value = q;
-                opt.textContent = q;
-                this.elements.qualitySelect.appendChild(opt);
-            });
+                opt.value = mode;
+                opt.textContent = document.querySelector(`#scale-mode option[value="${mode}"]`).textContent;
+                this.elements.keyModeSelect.appendChild(opt);
+            }
         },
 
         bindEvents() {
-            this.elements.rootSelect.addEventListener('change', e => {
-                this.state.rootNote = e.target.value;
-                this.updateVoicingChoices();
+            this.elements.keyRootSelect.addEventListener('change', e => {
+                this.state.keyRoot = e.target.value;
+                this.updateDiatonicPalette();
+                this.prePopulateSheet();
             });
-            this.elements.qualitySelect.addEventListener('change', e => {
-                this.state.quality = e.target.value;
-                this.updateVoicingChoices();
+            this.elements.keyModeSelect.addEventListener('change', e => {
+                this.state.keyMode = e.target.value;
+                this.updateDiatonicPalette();
+                this.prePopulateSheet();
             });
-            this.elements.addBtn.addEventListener('click', () => {
-                this.addChordToSheet();
+
+            // Se elimina el listener de click en diatonicPalette ya que ahora es drag&drop
+
+            this.elements.addBlankBtn.addEventListener('click', () => {
+                this.state.sheetChords.push(null); // 'null' representa un espacio en blanco
+                this.syncDropzoneUI();
+                this.renderSheet();
             });
+
+            this.elements.clearSheetBtn.addEventListener('click', () => {
+                this.state.sheetChords = [];
+                this.syncDropzoneUI();
+                this.renderSheet();
+            });
+
+            this.elements.playSequenceBtn.addEventListener('click', () => {
+                if (Tone.Transport.state === 'started') {
+                    AudioEngine.stopSequence();
+                } else {
+                    AudioEngine.playSequence(this.state.sheetChords);
+                    this.elements.playSequenceBtn.innerHTML = `<span class="button__icon">■</span> Detener`;
+                    this.elements.playSequenceBtn.classList.add('is-playing');
+                }
+            });
+
+            // Restaura el botón cuando la secuencia se detiene (por finalización o manualmente)
+            Tone.Transport.on('stop', () => {
+                this.elements.playSequenceBtn.innerHTML = `<span class="button__icon">▶</span> Reproducir Secuencia`;
+                this.elements.playSequenceBtn.classList.remove('is-playing');
+            });
+
+            this.elements.grid.addEventListener('click', (e) => {
+                const btn = e.target.closest('.button--edit');
+                if (btn) this.openVoicingModal(parseInt(btn.dataset.index, 10));
+            });
+
+            this.elements.modalClose.addEventListener('click', () => this.elements.modal.close());
         },
 
-        updateVoicingChoices() {
-            this.state.currentVoicings = GuitarEngine.getVoicings(this.state.rootNote, this.state.quality);
-            this.state.selectedVoicingIndex = 0;
-            this.elements.voicingsContainer.innerHTML = '';
+        updateDiatonicPalette() {
+            this.state.diatonicChords = Theory.generateDiatonicChords(this.state.keyRoot, this.state.keyMode);
+            this.elements.pool.innerHTML = '';
 
-            if (this.state.currentVoicings.length > 0) {
-                this.state.currentVoicings.forEach((voicing, index) => {
-                    const card = this.createVoicingCard(voicing, index);
-                    this.elements.voicingsContainer.appendChild(card);
-                });
-                this.elements.addBtn.disabled = false;
-            } else {
-                this.elements.voicingsContainer.innerHTML = `<p class="chord-svg-placeholder" style="grid-column: 1 / -1;">No se encontró un voicing para ${this.state.rootNote} ${this.state.quality}.</p>`;
-                this.elements.addBtn.disabled = true;
+            this.state.diatonicChords.forEach((chord, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'degree-btn';
+                btn.type = 'button';
+                btn.draggable = true;
+                btn.dataset.index = index;
+                btn.innerHTML = `${chord.degree}<span class="degree-btn__chord">${chord.rootNote} ${chord.quality}</span>`;
+                this.elements.pool.appendChild(btn);
+            });
+
+            const rootText = this.elements.keyRootSelect.options[this.elements.keyRootSelect.selectedIndex].text;
+            const modeText = this.elements.keyModeSelect.options[this.elements.keyModeSelect.selectedIndex].text;
+            this.elements.subtitle.textContent = `Tonalidad: ${rootText} ${modeText}`;
+        },
+
+        prePopulateSheet() {
+            this.state.sheetChords = [];
+            for (let i = 0; i < 7; i++) {
+                this.addChordToSheet(i, -1, false);
             }
-        },
-
-        createVoicingCard(voicing, index) {
-            const chordName = `${this.state.rootNote} ${this.state.quality}`;
-            const card = document.createElement('article');
-            card.className = 'voicing-card voicing-card--preview';
-            if (index === this.state.selectedVoicingIndex) {
-                card.classList.add('voicing-card--selected');
-            }
-            
-            card.innerHTML = `<header class="voicing-card__header"><span class="voicing-card__number">Opción ${index + 1}</span></header>`;
-            
-            const svgContainer = document.createElement('div');
-            svgContainer.className = 'chord-svg-container';
-            svgContainer.appendChild(UIBuilder.buildSVG(voicing, chordName));
-            card.appendChild(svgContainer);
-
-            card.addEventListener('click', () => {
-                this.state.selectedVoicingIndex = index;
-                this.elements.voicingsContainer.querySelectorAll('.voicing-card').forEach((c, i) => {
-                    c.classList.toggle('voicing-card--selected', i === index);
-                });
-            });
-
-            return card;
-        },
-
-        addChordToSheet() {
-            const selectedVoicing = this.state.currentVoicings[this.state.selectedVoicingIndex];
-            if (!selectedVoicing) return;
-
-            this.state.sheetChords.push({
-                fullName: `${this.state.rootNote} ${this.state.quality}`,
-                voicing: selectedVoicing
-            });
+            this.syncDropzoneUI();
             this.renderSheet();
+        },
+
+        addChordToSheet(chordIndex, insertIndex = -1, shouldRender = true) {
+            const chordData = this.state.diatonicChords[chordIndex];
+            if (!chordData) return;
+
+            const lastChord = [...this.state.sheetChords].reverse().find(c => c !== null);
+            const previousVoicing = lastChord ? lastChord.voicing : null;
+
+            const voicings = GuitarEngine.getVoicingsSortedByProximity(chordData.rootNote, chordData.quality, previousVoicing);
+            const bestVoicing = voicings[0];
+
+            if (bestVoicing) {
+                const chordObj = {
+                    degree: chordData.degree,
+                    fullName: chordData.fullName,
+                    voicing: bestVoicing
+                };
+                
+                if (insertIndex > -1) {
+                    this.state.sheetChords.splice(insertIndex, 0, chordObj);
+                } else {
+                    this.state.sheetChords.push(chordObj);
+                }
+                
+                if (shouldRender) {
+                    this.syncDropzoneUI();
+                    this.renderSheet();
+                }
+            }
+        },
+
+        removeChordFromSheet(slotIndex) {
+            this.state.sheetChords.splice(slotIndex, 1);
+            this.syncDropzoneUI();
+            this.renderSheet();
+        },
+
+        reorderSheet(fromIndex, toIndex) {
+            if (fromIndex === toIndex) return;
+            const element = this.state.sheetChords.splice(fromIndex, 1)[0];
+            this.state.sheetChords.splice(toIndex, 0, element);
+            this.syncDropzoneUI();
+            this.renderSheet();
+        },
+
+        syncDropzoneUI() {
+            this.elements.dropzone.innerHTML = '';
+            this.state.sheetChords.forEach((chordObj, slotIndex) => {
+                const slot = document.createElement('div');
+                slot.className = 'custom-progression__slot';
+                slot.draggable = true;
+                slot.dataset.slotIndex = slotIndex;
+                if (chordObj) {
+                    slot.textContent = chordObj.degree;
+                    slot.title = 'Arrastra fuera o doble clic para eliminar';
+                } else {
+                    slot.textContent = '⎕';
+                    slot.classList.add('is-blank');
+                    slot.title = 'Espacio en blanco';
+                }
+                this.elements.dropzone.appendChild(slot);
+            });
+        },
+
+        setupDragAndDrop() {
+            this.elements.pool.addEventListener('dragstart', (e) => {
+                if (e.target.closest('.degree-btn')) {
+                    e.dataTransfer.setData('action', 'add');
+                    e.dataTransfer.setData('index', e.target.closest('.degree-btn').dataset.index);
+                    e.target.style.opacity = '0.5';
+                }
+            });
+            this.elements.pool.addEventListener('dragend', (e) => {
+                if (e.target.closest('.degree-btn')) e.target.style.opacity = '1';
+            });
+
+            this.elements.pool.addEventListener('dragover', (e) => e.preventDefault());
+            this.elements.pool.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const action = e.dataTransfer.getData('action');
+                if (action === 'move_or_remove') {
+                    const slotIndex = parseInt(e.dataTransfer.getData('index'), 10);
+                    this.removeChordFromSheet(slotIndex);
+                }
+            });
+
+            this.elements.dropzone.addEventListener('dragstart', (e) => {
+                if (e.target.classList.contains('custom-progression__slot')) {
+                    e.dataTransfer.setData('action', 'move_or_remove');
+                    e.dataTransfer.setData('index', e.target.dataset.slotIndex);
+                    e.target.style.opacity = '0.5';
+                }
+            });
+            this.elements.dropzone.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('custom-progression__slot')) e.target.style.opacity = '1';
+            });
+
+            this.elements.dropzone.addEventListener('dragover', (e) => e.preventDefault());
+            
+            this.elements.dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const action = e.dataTransfer.getData('action');
+                const targetSlot = e.target.closest('.custom-progression__slot');
+                
+                if (action === 'add') {
+                    const degreeIndexStr = e.dataTransfer.getData('index');
+                    if (degreeIndexStr !== '') {
+                        let insertIndex = -1;
+                        if (targetSlot) {
+                            insertIndex = parseInt(targetSlot.dataset.slotIndex, 10);
+                        }
+                        this.addChordToSheet(parseInt(degreeIndexStr, 10), insertIndex, true);
+                    }
+                } else if (action === 'move_or_remove') {
+                    const fromIndex = parseInt(e.dataTransfer.getData('index'), 10);
+                    if (targetSlot) {
+                        const toIndex = parseInt(targetSlot.dataset.slotIndex, 10);
+                        this.reorderSheet(fromIndex, toIndex);
+                    } else {
+                        const toIndex = this.state.sheetChords.length - 1;
+                        this.reorderSheet(fromIndex, toIndex);
+                    }
+                }
+            });
+
+            this.elements.dropzone.addEventListener('dblclick', (e) => {
+                if (e.target.classList.contains('custom-progression__slot')) {
+                    const slotIndex = parseInt(e.target.dataset.slotIndex, 10);
+                    if (!isNaN(slotIndex)) {
+                        this.removeChordFromSheet(slotIndex);
+                    }
+                }
+            });
         },
 
         renderSheet() {
             this.elements.grid.innerHTML = '';
             this.state.sheetChords.forEach((chord, index) => {
-                const cell = this.createAssemblerCell(chord, index);
+                const cell = (chord === null)
+                    ? this.createBlankSlotCell(index)
+                    : UIBuilder.createChordCell(chord, chord.voicing, index);
                 this.elements.grid.appendChild(cell);
             });
         },
 
-        createAssemblerCell(chordData, index) {
-            const section = document.createElement('section');
-            section.className = 'chord-cell';
+        createBlankSlotCell(index) {
+            const slot = document.createElement('div');
+            slot.className = 'chord-grid__blank-slot';
             
-            section.innerHTML = `
-                <header class="chord-cell__header">
-                    <h3 class="chord-cell__name">${chordData.fullName}</h3>
-                </header>
-                <div class="chord-svg-container"></div>
-                <footer class="chord-cell__footer">
-                    <button class="button button--delete" type="button" data-index="${index}">
-                        <span class="button__icon">🗑️</span> Eliminar
-                    </button>
-                </footer>
-            `;
-            
-            section.querySelector('.chord-svg-container').appendChild(UIBuilder.buildSVG(chordData.voicing, chordData.fullName));
-            section.querySelector('.button--delete').addEventListener('click', () => {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'button button--delete';
+            deleteBtn.innerHTML = '<span class="button__icon">🗑️</span>';
+            deleteBtn.title = 'Eliminar espacio';
+            deleteBtn.addEventListener('click', () => {
                 this.state.sheetChords.splice(index, 1);
+                this.syncDropzoneUI();
                 this.renderSheet();
             });
 
-            return section;
+            slot.appendChild(deleteBtn);
+            return slot;
+        },
+
+        openVoicingModal(slotIndex) {
+            this.state.editingSlotIndex = slotIndex;
+            const chordObj = this.state.sheetChords[slotIndex];
+            const [rootNote, quality] = chordObj.fullName.split(' ');
+            const voicings = GuitarEngine.getVoicings(rootNote, quality);
+
+            this.elements.modalTitle.textContent = chordObj.fullName;
+            this.elements.modalGrid.innerHTML = '';
+
+            voicings.forEach((voicing, idx) => {
+                const card = document.createElement('article');
+                card.className = 'voicing-card';
+                card.innerHTML = `<header class="voicing-card__header"><span class="voicing-card__number">Opción ${idx + 1}</span></header>`;
+                
+                const svgContainer = document.createElement('div');
+                svgContainer.className = 'chord-svg-container chord-svg-container--thumbnail';
+                svgContainer.appendChild(UIBuilder.buildSVG(voicing, chordObj.fullName));
+
+                const footer = document.createElement('footer');
+                footer.className = 'voicing-card__footer';
+                
+                const isSelected = JSON.stringify(chordObj.voicing) === JSON.stringify(voicing);
+
+                const btnFix = document.createElement('button');
+                btnFix.className = 'button button--select';
+                btnFix.type = 'button';
+                btnFix.textContent = isSelected ? 'Seleccionada' : 'Fijar';
+                if (isSelected) btnFix.disabled = true;
+
+                btnFix.addEventListener('click', () => {
+                    this.state.sheetChords[this.state.editingSlotIndex].voicing = voicing;
+                    this.renderSheet();
+                    this.elements.modal.close();
+                });
+
+                footer.appendChild(btnFix);
+                card.append(svgContainer, footer);
+                this.elements.modalGrid.appendChild(card);
+            });
+
+            if (typeof this.elements.modal.showModal === "function") {
+                this.elements.modal.showModal();
+            } else {
+                this.elements.modal.style.display = 'block';
+            }
         }
     };
 
@@ -1114,7 +1493,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('progression-generator-section').style.display = 'none';
                 document.getElementById('chord-assembler-section').style.display = 'none';
                 document.getElementById('scale-explorer-section').style.display = 'none';
-                document.getElementById(target.dataset.section).style.display = 'block';
+                
+                const sectionId = target.dataset.section;
+                document.getElementById(sectionId).style.display = 'block';
+
+                // Lógica de impresión: aplicar horizontal (landscape) solo al Explorador de Escalas
+                let styleEl = document.getElementById('print-landscape-style');
+                if (sectionId === 'scale-explorer-section') {
+                    if (!styleEl) {
+                        styleEl = document.createElement('style');
+                        styleEl.id = 'print-landscape-style';
+                        styleEl.textContent = '@media print { @page { size: letter landscape; } }';
+                        document.head.appendChild(styleEl);
+                    }
+                } else {
+                    if (styleEl) styleEl.remove();
+                }
             });
         }
     };

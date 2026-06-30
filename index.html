@@ -6,6 +6,8 @@
     <title>Generador de Acordes y Teoría Musical para Guitarra Clásica</title>
     <!-- Vinculación estricta de la hoja de estilos externa -->
     <link rel="stylesheet" href="styles.css">
+    <!-- Inclusión de Tone.js para el motor de audio -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
 </head>
 <body class="app">
 
@@ -67,12 +69,16 @@
                 <div class="form-control">
                     <label class="form-control__label" for="preset-progression">Progresiones Predeterminadas</label>
                     <select class="form-control__select" id="preset-progression">
-                        <option value="I-IV-V-I" selected>I - IV - V - I (Básica)</option>
-                        <option value="ii-V-I">ii - V - I (Jazz/Clásica)</option>
-                        <option value="I-vi-IV-V">I - vi - IV - V (Pop/Balada)</option>
-                        <option value="I-V-vi-IV">I - V - vi - IV (Pop Épico)</option>
-                        <option value="vi-IV-I-V">vi - IV - I - V (Pop Moderno)</option>
-                        <option value="I-vi-ii-V">I - vi - ii - V (Doo-Wop)</option>
+                        <option value="I-IV-V-I" selected>I - IV - V - I (Básica / Feliz)</option>
+                        <option value="I-V-vi-IV">I - V - vi - IV (Pop Épico / Emocional)</option>
+                        <option value="vi-IV-I-V">vi - IV - I - V (Pop Moderno / Melancólico)</option>
+                        <option value="I-vi-IV-V">I - vi - IV - V (Doo-Wop / Balada 50s)</option>
+                        <option value="ii-V-I">ii - V - I (Jazz / Clásica Resolutiva)</option>
+                        <option value="vi-ii-V-I">vi - ii - V - I (Círculo Romántico)</option>
+                        <option value="I-vi-ii-V">I - vi - ii - V (Jazz Standard)</option>
+                        <option value="I-III-IV-iv">I - III - IV - iv (Alternativo / Nostálgico)</option>
+                        <option value="i-VI-III-VII">i - VI - III - VII (Épico Menor / Cine)</option>
+                        <option value="i-iv-v-i">i - iv - v - i (Blues Menor Oscuro)</option>
                     </select>
                 </div>
 
@@ -106,8 +112,13 @@
         <div class="chord-sheet">
             <article class="chord-sheet__document">
                 <header class="chord-sheet__header">
-                    <h2 class="chord-sheet__title">Hoja de Práctica: Progresión en C Major (Do Mayor)</h2>
-                    <p class="chord-sheet__subtitle">Movimiento Tonal: I - IV - V - I</p>
+                    <div>
+                        <h2 class="chord-sheet__title">Hoja de Práctica: Progresión en C Major (Do Mayor)</h2>
+                        <p class="chord-sheet__subtitle">Movimiento Tonal: I - IV - V - I</p>
+                    </div>
+                    <button class="button button--play no-print" id="btn-play-generator" style="align-self: center;">
+                        <span class="button__icon">▶</span> Reproducir Progresión
+                    </button>
                 </header>
 
                 <!-- Cuadrícula para mostrar máximo 4 columnas por fila (El maquetado Carta se gestiona en CSS) -->
@@ -244,47 +255,68 @@
             </div>
         </main>
 
-        <main id="chord-assembler-section" class="app-layout" style="display: none;">
+        <main id="chord-assembler-section" style="display: none;">
+            <div class="app-layout">
             <aside class="config-panel">
                 <section class="config-panel__section">
-                    <h2 class="config-panel__subtitle">Catálogo de Acordes</h2>
+                    <h2 class="config-panel__subtitle">Tonalidad de la Hoja</h2>
                     <p class="custom-progression__help-text" style="margin-bottom: 1.5rem;">
-                        Construye tu hoja de práctica seleccionando un acorde del catálogo y añadiéndolo.
+                        Selecciona una tonalidad para ver sus acordes diatónicos principales.
                     </p>
                     <div class="form-control">
-                        <label class="form-control__label" for="assembler-root-note">Nota Raíz</label>
-                        <select class="form-control__select" id="assembler-root-note">
+                        <label class="form-control__label" for="assembler-key-root">Nota Raíz</label>
+                        <select class="form-control__select" id="assembler-key-root">
                             <!-- Opciones generadas por JS -->
                         </select>
                     </div>
                     <div class="form-control">
-                        <label class="form-control__label" for="assembler-quality">Calidad del Acorde</label>
-                        <select class="form-control__select" id="assembler-quality">
+                        <label class="form-control__label" for="assembler-key-mode">Modo / Escala</label>
+                        <select class="form-control__select" id="assembler-key-mode">
                             <!-- Opciones generadas por JS -->
                         </select>
                     </div>
+                </section>
+                <section class="config-panel__section">
+                    <h2 class="config-panel__subtitle">Construcción de Hoja</h2>
                     
-                    <div class="assembler-preview">
-                        <h3 class="assembler-preview__title">Previsualización y Voicings</h3>
-                        <div id="assembler-voicings-container">
-                            <!-- Voicing cards generados por JS -->
+                    <div class="custom-progression">
+                        <p class="custom-progression__help-text">Arrastra grados para añadirlos a la hoja, o devuélvelos aquí para eliminarlos:</p>
+                        
+                        <div class="custom-progression__pool" id="assembler-pool" aria-label="Grados musicales disponibles">
+                            <!-- Botones generados por JS -->
+                        </div>
+
+                        <div class="custom-progression__dropzone" id="assembler-dropzone" aria-label="Área de progresión construida">
+                            <!-- Slots generados por JS -->
                         </div>
                     </div>
-                    <button class="button button--primary" id="btn-add-chord-to-sheet" style="width: 100%; margin-top: 1.5rem;">Añadir a la Hoja</button>
+                </section>
+
+                <section class="config-panel__section">
+                    <h2 class="config-panel__subtitle">Controles de Maquetación</h2>
+                    <div class="layout-controls">
+                        <button class="button button--secondary" id="btn-add-blank-slot"><span class="button__icon">⎕</span> Añadir Espacio</button>
+                        <button class="button button--delete" id="btn-clear-sheet" style="width: auto;"><span class="button__icon">🗑️</span> Limpiar Hoja</button>
+                    </div>
                 </section>
             </aside>
             <div class="chord-sheet">
                 <article class="chord-sheet__document" id="assembler-sheet-document">
                     <header class="chord-sheet__header" id="assembler-header">
-                        <h2 class="chord-sheet__title">Hoja de Práctica Personalizada</h2>
-                        <p class="chord-sheet__subtitle">Ensamblador de Acordes</p>
+                        <div>
+                            <h2 class="chord-sheet__title">Hoja de Práctica Personalizada</h2>
+                            <p class="chord-sheet__subtitle" id="assembler-subtitle">Ensamblador de Acordes</p>
+                        </div>
+                        <button class="button button--play no-print" id="btn-play-sequence" style="align-self: center;"><span class="button__icon">▶</span> Reproducir Secuencia</button>
                     </header>
                     <div class="chord-grid" id="assembler-grid"></div>
                 </article>
             </div>
+            </div>
         </main>
 
-        <main id="scale-explorer-section" class="app-layout" style="display: none;">
+        <main id="scale-explorer-section" style="display: none;">
+            <div class="app-layout">
             <aside class="config-panel">
                 <section class="config-panel__section">
                     <h2 class="config-panel__subtitle">Configuración de Escala</h2>
@@ -304,6 +336,7 @@
             </aside>
             <div class="fretboard-container" id="scale-explorer-fretboard">
                 <!-- El diagrama del diapasón completo será renderizado aquí por JS -->
+            </div>
             </div>
         </main>
     </div>
